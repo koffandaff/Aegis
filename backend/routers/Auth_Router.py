@@ -42,14 +42,29 @@ async def login(login_data: UserLogin):
         result = auth_service.login_user(login_data.email, login_data.password)
         print(f"[AUTH] Login SUCCESS for: {login_data.email}")
         return result
+    except PermissionError as e:
+        if str(e) == "ACCOUNT_DISABLED":
+            print(f"[AUTH] Login BLOCKED - Account disabled: {login_data.email}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={"code": "ACCOUNT_DISABLED", "message": "Your account has been disabled by an administrator. Please contact support."}
+            )
+        raise HTTPException(status_code=403, detail=str(e))
     except ValueError as e:
         print(f"[AUTH] Login FAILED for: {login_data.email}")
         raise HTTPException(status_code=401, detail=str(e))
 
 @router.post('/logout')
 async def logout(request: RefreshTokenRequest, current_user: dict = Depends(get_current_user)):
+    from model.Auth_Model import db
     try:
         auth_service.logout(current_user['id'], request.refresh_token)
+        # Log logout activity
+        db.log_activity(
+            user_id=current_user['id'],
+            action='logout',
+            details={'email': current_user.get('email')}
+        )
         return {"message": "Successfully logged out"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

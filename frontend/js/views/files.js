@@ -52,17 +52,38 @@ class FileView {
                             </h3>
                             <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Upload a file for deep static analysis and malware detection.</p>
                             <form id="upload-form">
-                                <div style="margin-bottom: 1rem;">
-                                    <label>Select File</label>
-                                    <input type="file" id="file-input" required>
+                                <div id="drop-zone" style="border: 2px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 2rem; text-align: center; margin-bottom: 1.5rem; transition: all 0.3s ease; cursor: pointer; background: rgba(255,255,255,0.02);">
+                                    <input type="file" id="file-input" style="display: none;">
+                                    <div style="margin-bottom: 1rem;">
+                                        <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--secondary); opacity: 0.7;">cloud_upload</span>
+                                    </div>
+                                    <p style="color: var(--text-main); font-weight: 500; margin-bottom: 0.5rem;">Click to upload or drag and drop</p>
+                                    <p style="color: var(--text-muted); font-size: 0.8rem;">Maximum file size 50MB</p>
                                 </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+
+                                <!-- Vertical File List -->
+                                <div id="file-list" style="margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem;"></div>
+
+                                <!-- Upload Status Indicator -->
+                                <div id="upload-status" style="display: none; margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div id="status-icon" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                            <span class="material-symbols-outlined" style="color: var(--secondary); animation: spin 1s linear infinite;">progress_activity</span>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <div id="status-text" style="font-size: 0.9rem; color: #fff;">Uploading...</div>
+                                            <div id="status-detail" style="font-size: 0.75rem; color: var(--text-muted);">Please wait</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 1.5rem;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 6px;">
                                         <input type="checkbox" id="upload-virustotal" checked>
-                                        <span>Cross-reference with VirusTotal</span>
+                                        <span style="font-size: 0.9rem;">Cross-reference with VirusTotal</span>
                                     </label>
                                 </div>
-                                <button type="submit" class="btn btn-outline" style="width: 100%;">UPLOAD & ANALYZE</button>
+                                <button type="submit" class="btn btn-outline" style="width: 100%;" id="analyze-btn">START ANALYSIS</button>
                             </form>
                         </div>
                     </div>
@@ -186,20 +207,96 @@ class FileView {
             }
         });
 
-        // File Upload
+        // Drag & Drop Logic
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+
+        if (dropZone && fileInput) {
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--primary)';
+                dropZone.style.background = 'rgba(0, 255, 157, 0.05)';
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.style.borderColor = 'rgba(255,255,255,0.1)';
+                dropZone.style.background = 'rgba(255,255,255,0.02)';
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'rgba(255,255,255,0.1)';
+                dropZone.style.background = 'rgba(255,255,255,0.02)';
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateFileList();
+                }
+            });
+
+            fileInput.addEventListener('change', updateFileList);
+        }
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            Array.from(fileInput.files).forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'fade-in';
+                item.style.cssText = `
+                    display: flex; 
+                    align-items: center; 
+                    gap: 1rem; 
+                    background: rgba(0,0,0,0.3); 
+                    padding: 0.75rem 1rem; 
+                    border-radius: 8px; 
+                    border: 1px solid rgba(255,255,255,0.05);
+                `;
+                item.innerHTML = `
+                    <div style="width: 36px; height: 36px; border-radius: 6px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined" style="font-size: 1.2rem; color: var(--primary);">description</span>
+                    </div>
+                    <div style="flex: 1; overflow: hidden;">
+                        <div style="font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${file.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">${Utils.formatBytes(file.size)}</div>
+                    </div>
+                    <span class="material-symbols-outlined" style="color: #ff4757; cursor: pointer; font-size: 1.2rem;" onclick="this.parentElement.remove(); document.getElementById('file-input').value = '';">delete</span>
+                `;
+                fileList.appendChild(item);
+            });
+        }
+
+        // File Upload Submit
+        const uploadStatus = document.getElementById('upload-status');
+        const statusIcon = document.getElementById('status-icon');
+        const statusText = document.getElementById('status-text');
+        const statusDetail = document.getElementById('status-detail');
+        const analyzeBtn = document.getElementById('analyze-btn');
+
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const fileInput = document.getElementById('file-input');
             const useVT = document.getElementById('upload-virustotal').checked;
-            if (fileInput.files.length === 0) return;
+
+            if (fileInput.files.length === 0) {
+                Utils.showToast('Please select a file first', 'error');
+                return;
+            }
+
+            // Show uploading status
+            uploadStatus.style.display = 'block';
+            statusIcon.innerHTML = '<span class="material-symbols-outlined" style="color: var(--secondary); animation: spin 1s linear infinite;">progress_activity</span>';
+            statusText.textContent = `Uploading ${fileInput.files[0].name}...`;
+            statusDetail.textContent = 'Analyzing file for threats';
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'ANALYZING...';
 
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
             try {
-                Utils.showToast('Analyzing file...', 'info');
                 const token = localStorage.getItem('access_token');
-                const response = await fetch(`http://localhost:8000/api/files/upload/analyze?use_virustotal=${useVT}`, {
+                const response = await fetch(`${Api.baseUrl}/files/upload/analyze?use_virustotal=${useVT}`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
@@ -208,10 +305,24 @@ class FileView {
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.detail || 'Upload failed');
 
+                // Show success status
+                statusIcon.innerHTML = '<span class="material-symbols-outlined" style="color: var(--primary);">check_circle</span>';
+                statusText.textContent = 'Analysis Complete';
+                statusDetail.textContent = `${fileInput.files[0].name} processed successfully`;
+                uploadStatus.style.borderColor = 'var(--primary)';
+
                 this.displayResults(data, 'file');
                 Utils.showToast('File analysis complete', 'success');
             } catch (error) {
+                // Show error status
+                statusIcon.innerHTML = '<span class="material-symbols-outlined" style="color: #ff4757;">error</span>';
+                statusText.textContent = 'Analysis Failed';
+                statusDetail.textContent = error.message;
+                uploadStatus.style.borderColor = '#ff4757';
                 Utils.showToast(error.message, 'error');
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'START ANALYSIS';
             }
         });
     }

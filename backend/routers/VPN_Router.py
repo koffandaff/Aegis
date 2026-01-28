@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, status, Header
+from typing import List, Optional
 from model.VPN_Model import VPNConfigRequest, WireGuardRequest, VPNConfigResponse
 from service.VPN_Service import vpn_service
-from routers.dependencies import get_current_user
+from routers.dependencies import get_current_user, get_current_user_optional
 
 router = APIRouter()
 
@@ -63,4 +63,43 @@ async def list_user_configs(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve configurations: {str(e)}"
+        )
+
+
+@router.get("/server-setup")
+async def get_server_setup_files(
+    x_server_secret: Optional[str] = Header(None, alias="X-Server-Secret"),
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    Get all PKI files needed to set up the OpenVPN server.
+    
+    Can be authenticated via:
+    1. X-Server-Secret header (for automated scripts)
+    2. JWT token (for authorized admins)
+    """
+    import os
+    server_secret = os.getenv("VPN_SERVER_SECRET")
+    
+    if x_server_secret and x_server_secret == server_secret:
+        # Authenticated via shared secret
+        pass
+    elif current_user:
+        # In production, add admin check here
+        # if current_user.get('role') != 'admin':
+        #     raise HTTPException(status_code=403, detail="Admin access required")
+        pass
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to fetch server setup files"
+        )
+    
+    try:
+        files = vpn_service.get_server_setup_files()
+        return files
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve server setup files: {str(e)}"
         )

@@ -59,8 +59,10 @@ class Utils {
         return text
             .replace(/^#### (.*)$/gm, '<h4 style="color: var(--primary); margin-bottom: 0.5rem; margin-top: 1.5rem; font-weight: bold;">$1</h4>')
             .replace(/^### (.*)$/gm, '<h3 style="color: var(--secondary); margin-bottom: 1rem; margin-top: 0.5rem; border-bottom: 1px solid rgba(0,255,157,0.1); padding-bottom: 0.5rem;">$1</h3>')
+            .replace(/^## (.*)$/gm, '<h2 style="color: var(--primary); margin-bottom: 1.2rem; margin-top: 2rem; border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem;">$1</h2>')
+            .replace(/^# (.*)$/gm, '<h1 style="color: var(--primary); margin-bottom: 1.5rem; margin-top: 2.5rem; text-align: center; border-bottom: 2px solid var(--secondary); padding-bottom: 0.8rem;">$1</h1>')
             .replace(/\*\*(.*)\*\*/g, '<strong style="color: var(--primary);">$1</strong>')
-            .replace(/^- (.*)$/gm, '<li style="margin-left: 1.5rem; margin-bottom: 0.4rem; color: var(--text-main);">$1</li>')
+            .replace(/^- (.*)$/gm, '<li style="margin-left: 1.5rem; margin-bottom: 0.4rem; color: var(--text-main); list-style-type: disc;">$1</li>')
             .replace(/`(.*)`/g, '<code style="background: rgba(0,255,157,0.1); padding: 2px 6px; border-radius: 4px; color: var(--primary); font-family: \'JetBrains Mono\';">$1</code>')
             .replace(/\n/g, '<br>');
     }

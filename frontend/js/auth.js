@@ -4,8 +4,13 @@ import Router from './router.js';
 class Auth {
     static async login(email, password) {
         try {
-            const formData = { email, password }; // In real OAuth2 form-data is standard, but backend uses JSON here based on endpoints.md
+            const formData = { email, password };
             const response = await Api.post('/auth/login', formData);
+
+            // If response is null, the disabled modal was shown by Api
+            if (!response) {
+                return null;
+            }
 
             localStorage.setItem('access_token', response.access_token);
             localStorage.setItem('refresh_token', response.refresh_token);

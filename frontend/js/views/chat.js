@@ -179,8 +179,16 @@ class ChatView {
     }
 
     async loadSession(sessionId) {
+        // Prevent duplicate loading
+        if (this.isLoadingSession) return;
+        this.isLoadingSession = true;
+
         try {
             const session = await Api.get(`/chat/sessions/${sessionId}`);
+            if (!session || !session.messages) {
+                throw new Error('Invalid session data');
+            }
+
             this.currentSessionId = sessionId;
             this.renderSessionList();
             this.renderMessages(session.messages);
@@ -188,9 +196,13 @@ class ChatView {
             document.getElementById('chat-title').textContent = session.title;
             document.getElementById('delete-session-btn').style.display = 'block';
             document.getElementById('edit-title-btn').style.display = 'block';
-            document.getElementById('welcome-message').style.display = 'none';
+            const welcome = document.getElementById('welcome-message');
+            if (welcome) welcome.style.display = 'none';
         } catch (error) {
+            console.error('Session load error:', error);
             Utils.showToast('Failed to load session', 'error');
+        } finally {
+            this.isLoadingSession = false;
         }
     }
 
@@ -239,8 +251,18 @@ class ChatView {
             return `<pre class="code-block" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 0.5rem 0; position: relative;"><code class="language-${lang || 'plaintext'}">${code.trim()}</code><button onclick="copyCode(this)" style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(255,255,255,0.1); border: none; color: var(--text-muted); padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">COPY</button></pre>`;
         });
 
-        // Inline code
+        // Inline code (before other formatting to preserve backticks)
         formatted = formatted.replace(/`([^`]+)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: JetBrains Mono, monospace;">$1</code>');
+
+        // Headings (must process before line breaks)
+        // H4
+        formatted = formatted.replace(/^#### (.+)$/gm, '<h4 class="markdown-content" style="font-size: 1.1rem; font-weight: 600; margin: 1rem 0 0.5rem 0; color: var(--text-main);">$1</h4>');
+        // H3
+        formatted = formatted.replace(/^### (.+)$/gm, '<h3 class="markdown-content" style="font-size: 1.25rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; color: var(--text-main);">$1</h3>');
+        // H2
+        formatted = formatted.replace(/^## (.+)$/gm, '<h2 class="markdown-content" style="font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.75rem 0; color: var(--text-main);">$1</h2>');
+        // H1
+        formatted = formatted.replace(/^# (.+)$/gm, '<h1 class="markdown-content" style="font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 0.75rem 0; color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">$1</h1>');
 
         // Bold
         formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
@@ -248,7 +270,14 @@ class ChatView {
         // Italic
         formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
-        // Line breaks
+        // Bullet lists
+        formatted = formatted.replace(/^- (.+)$/gm, '<li style="margin-left: 1rem; list-style-type: disc;">$1</li>');
+        formatted = formatted.replace(/^\* (.+)$/gm, '<li style="margin-left: 1rem; list-style-type: disc;">$1</li>');
+
+        // Numbered lists
+        formatted = formatted.replace(/^(\d+)\. (.+)$/gm, '<li style="margin-left: 1rem; list-style-type: decimal;">$2</li>');
+
+        // Line breaks (for remaining newlines not consumed by block elements)
         formatted = formatted.replace(/\n/g, '<br>');
 
         return formatted;
@@ -405,19 +434,60 @@ class ChatView {
     async editTitle() {
         if (!this.currentSessionId) return;
 
-        const currentTitle = document.getElementById('chat-title').textContent;
-        const newTitle = prompt('Enter new conversation title:', currentTitle);
+        const titleEl = document.getElementById('chat-title');
+        const currentTitle = titleEl.textContent;
+        const editBtn = document.getElementById('edit-title-btn');
 
-        if (newTitle && newTitle.trim() && newTitle !== currentTitle) {
-            try {
-                await Api.put(`/chat/sessions/${this.currentSessionId}/title`, { title: newTitle.trim() });
-                document.getElementById('chat-title').textContent = newTitle.trim();
-                await this.loadSessions();
-                Utils.showToast('Title updated', 'success');
-            } catch (error) {
-                Utils.showToast('Failed to update title', 'error');
+        // Already editing
+        if (titleEl.querySelector('input')) return;
+
+        // Create inline input
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentTitle;
+        input.className = 'inline-edit-input';
+        input.style.cssText = 'background: rgba(0,0,0,0.4); border: 1px solid var(--primary); border-radius: 4px; color: var(--text-main); padding: 0.25rem 0.5rem; font-family: inherit; font-size: inherit; width: 200px; outline: none;';
+
+        // Replace title with input
+        titleEl.textContent = '';
+        titleEl.appendChild(input);
+        input.focus();
+        input.select();
+
+        // Hide edit button during editing
+        editBtn.style.display = 'none';
+
+        const saveTitle = async () => {
+            const newTitle = input.value.trim();
+            if (newTitle && newTitle !== currentTitle) {
+                try {
+                    await Api.put(`/chat/sessions/${this.currentSessionId}/title`, { title: newTitle });
+                    titleEl.textContent = newTitle;
+                    await this.loadSessions();
+                    Utils.showToast('Title updated', 'success');
+                } catch (error) {
+                    titleEl.textContent = currentTitle;
+                    Utils.showToast('Failed to update title', 'error');
+                }
+            } else {
+                titleEl.textContent = currentTitle;
             }
-        }
+            editBtn.style.display = 'block';
+        };
+
+        // Save on Enter, cancel on Escape
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveTitle();
+            } else if (e.key === 'Escape') {
+                titleEl.textContent = currentTitle;
+                editBtn.style.display = 'block';
+            }
+        });
+
+        // Save on blur
+        input.addEventListener('blur', saveTitle);
     }
 
     async deleteCurrentSession() {

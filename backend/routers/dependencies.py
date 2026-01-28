@@ -1,5 +1,6 @@
 from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Optional
 from service.Auth_Service import AuthService
 from model.Auth_Model import db
 
@@ -16,6 +17,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    # Check if user is disabled by admin
+    if not user.get('is_active', True):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"code": "ACCOUNT_DISABLED", "message": "Your account has been disabled by an administrator. Please contact support."}
+        )
+    
     return user
 
 # Dependency to check if user is admin
@@ -37,3 +46,12 @@ def require_role(required_role: str):
             )
         return current_user
     return role_checker
+
+async def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))):
+    if not credentials:
+        return None
+    try:
+        user = auth_service.get_current_user(credentials.credentials)
+        return user
+    except:
+        return None

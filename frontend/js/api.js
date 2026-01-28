@@ -1,4 +1,8 @@
-const API_URL = 'http://localhost:8000/api';
+// Dynamic API URL for remote access
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8000/api'
+    : `http://${window.location.hostname}:8000/api`;
+
 
 class Api {
     static baseUrl = API_URL;
@@ -39,12 +43,20 @@ class Api {
 
             const data = await response.json();
 
+            // Check for account disabled by admin
+            if (response.status === 403 && data.detail?.code === 'ACCOUNT_DISABLED') {
+                this.showDisabledModal(data.detail.message);
+                return null;
+            }
+
             if (!response.ok) {
                 let errorMessage = data.detail || 'API Request Failed';
                 if (typeof errorMessage === 'object') {
                     if (Array.isArray(errorMessage)) {
                         // Handle Pydantic validation errors
                         errorMessage = errorMessage.map(err => err.msg).join(', ');
+                    } else if (errorMessage.message) {
+                        errorMessage = errorMessage.message;
                     } else {
                         errorMessage = JSON.stringify(errorMessage);
                     }
@@ -54,10 +66,45 @@ class Api {
 
             return data;
         } catch (error) {
-            // Utils.showToast(error.message, 'error');
-            console.error('API Error:', error);
+            console.group('API Request Failed');
+            console.error('Endpoint:', endpoint);
+            console.error('Method:', method);
+            console.error('Error:', error);
+            console.groupEnd();
             throw error;
         }
+    }
+
+    static showDisabledModal(message) {
+        // Remove any existing modal
+        const existingModal = document.getElementById('disabled-modal');
+        if (existingModal) existingModal.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'disabled-modal';
+        modal.innerHTML = `
+            <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                <div style="background: linear-gradient(145deg, rgba(30,30,35,0.95), rgba(15,15,20,0.98)); border: 1px solid #ff4757; border-radius: 16px; padding: 3rem; max-width: 450px; text-align: center; box-shadow: 0 0 50px rgba(255,71,87,0.3);">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; background: rgba(255,71,87,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined" style="font-size: 3rem; color: #ff4757;">block</span>
+                    </div>
+                    <h2 style="color: #ff4757; margin-bottom: 1rem; font-size: 1.5rem;">Account Disabled</h2>
+                    <p style="color: #a0a0a0; margin-bottom: 2rem; line-height: 1.6;">${message}</p>
+                    <button id="disabled-logout-btn" style="background: #ff4757; color: #fff; border: none; padding: 1rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.3s;">
+                        Logout & Exit
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('disabled-logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user');
+            window.location.hash = '/login';
+            modal.remove();
+        });
     }
 
     static get(endpoint) {

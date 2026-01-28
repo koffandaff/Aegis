@@ -80,6 +80,14 @@ class FootprintService:
                 "completed_at": datetime.utcnow().isoformat()
             })
             
+            # Log footprint activity
+            from model.Auth_Model import db as auth_db
+            auth_db.log_activity(
+                user_id=user_id,
+                action='footprint',
+                details={'email': request.email, 'username': request.username, 'findings_count': len(findings)}
+            )
+            
         except Exception as e:
             self.db.update_scan(scan_id, user_id, {
                 "status": "failed",

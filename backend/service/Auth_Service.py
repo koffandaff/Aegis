@@ -90,6 +90,13 @@ class AuthService:
         }
 
         user_id = self.db.save_user(user_save)
+        
+        # Log signup activity
+        self.db.log_activity(
+            user_id=user_id,
+            action='signup',
+            details={'email': user_data['email'], 'username': user_data['username']}
+        )
 
         return {
             'id': user_id,
@@ -113,14 +120,21 @@ class AuthService:
         if not self.verify_password(password, user['hashed_password']):
             return None
         
+        # Check if user is disabled - raise specific error
         if not user.get('is_active', True):
-            return None
+            raise PermissionError("ACCOUNT_DISABLED")
         
         return user
     
     def login_user(self, email: str, password: str) -> dict:
         """Login user and return tokens"""
-        user = self.authenticate_user(email, password)
+        try:
+            user = self.authenticate_user(email, password)
+        except PermissionError as e:
+            if str(e) == "ACCOUNT_DISABLED":
+                raise PermissionError("ACCOUNT_DISABLED")
+            raise
+        
         if not user:
             raise ValueError("Invalid credentials")
         
@@ -135,6 +149,13 @@ class AuthService:
         refresh_token = self.create_refresh_token(token_payload)
 
         self.db.save_refresh_token(user['id'], refresh_token)
+        
+        # Log login activity
+        self.db.log_activity(
+            user_id=user['id'],
+            action='login',
+            details={'email': user['email'], 'username': user.get('username')}
+        )
 
         return {
             'access_token': access_token,

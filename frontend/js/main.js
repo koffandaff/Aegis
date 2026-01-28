@@ -12,6 +12,7 @@ import VpnView from './views/vpn.js';
 import ProfileView from './views/profile.js';
 import ChatView from './views/chat.js';
 import FootprintView from './views/footprint.js';
+import LandingView from './views/landing.js';
 
 // Register Routes
 Router.addRoute('/login', LoginView);
@@ -27,9 +28,9 @@ Router.addRoute('/history', HistoryView, true);
 Router.addRoute('/admin', AdminView, true);
 Router.addRoute('/vpn', VpnView, true);
 Router.addRoute('/profile', ProfileView, true);
-// Add default route
-Router.addRoute('/', LoginView);
+
+// Add default route - Landing Page for unauthenticated users
+Router.addRoute('/', LandingView);
 
 // Initialize Router
 Router.init();
-

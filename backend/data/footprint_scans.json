@@ -300,6 +300,137 @@
       "started_at": "2026-01-27 06:51:39.432636",
       "completed_at": "2026-01-27T06:51:40.768826",
       "error_message": null
+    },
+    {
+      "id": "909b06cb-d54c-4c13-9ffc-80a77d226d72",
+      "user_id": "2c1b5165-3a6a-411a-9bf0-58cb79f0ed1c",
+      "email_scanned": "dhruvillearning@gmail.com",
+      "username_scanned": "dhruvil",
+      "phone_scanned": null,
+      "platforms_checked": [
+        "twitter",
+        "instagram",
+        "facebook",
+        "linkedin",
+        "tiktok",
+        "reddit",
+        "github",
+        "discord"
+      ],
+      "score": 79,
+      "findings": [
+        {
+          "id": "4802509e",
+          "category": "email_exposure",
+          "source": "Twitter",
+          "severity": "medium",
+          "title": "Email registered on Twitter",
+          "description": "Your email address appears to be registered on Twitter.",
+          "url": null,
+          "found_at": "2026-01-28 11:01:57.126864"
+        },
+        {
+          "id": "b005bb7c",
+          "category": "email_exposure",
+          "source": "Facebook",
+          "severity": "medium",
+          "title": "Email registered on Facebook",
+          "description": "Your email address appears to be registered on Facebook.",
+          "url": null,
+          "found_at": "2026-01-28 11:01:57.126905"
+        },
+        {
+          "id": "fe16409a",
+          "category": "email_exposure",
+          "source": "Spotify",
+          "severity": "low",
+          "title": "Email registered on Spotify",
+          "description": "Your email address appears to be registered on Spotify.",
+          "url": null,
+          "found_at": "2026-01-28 11:01:57.126929"
+        },
+        {
+          "id": "a82279ca",
+          "category": "email_exposure",
+          "source": "Pinterest",
+          "severity": "low",
+          "title": "Email registered on Pinterest",
+          "description": "Your email address appears to be registered on Pinterest.",
+          "url": null,
+          "found_at": "2026-01-28 11:01:57.126948"
+        },
+        {
+          "id": "6bb6ee20",
+          "category": "email_exposure",
+          "source": "Discord",
+          "severity": "medium",
+          "title": "Email registered on Discord",
+          "description": "Your email address appears to be registered on Discord.",
+          "url": null,
+          "found_at": "2026-01-28 11:01:57.126966"
+        },
+        {
+          "id": "b1e170c5",
+          "category": "username_found",
+          "source": "Twitter",
+          "severity": "low",
+          "title": "Username found on Twitter",
+          "description": "The username 'dhruvil' was found on Twitter.",
+          "url": "https://twitter.com/dhruvil",
+          "found_at": "2026-01-28 11:01:57.150031"
+        },
+        {
+          "id": "ea51cd7e",
+          "category": "username_found",
+          "source": "Instagram",
+          "severity": "low",
+          "title": "Username found on Instagram",
+          "description": "The username 'dhruvil' was found on Instagram.",
+          "url": "https://instagram.com/dhruvil",
+          "found_at": "2026-01-28 11:01:57.150082"
+        },
+        {
+          "id": "7ea5df68",
+          "category": "username_found",
+          "source": "Facebook",
+          "severity": "low",
+          "title": "Username found on Facebook",
+          "description": "The username 'dhruvil' was found on Facebook.",
+          "url": "https://facebook.com/dhruvil",
+          "found_at": "2026-01-28 11:01:57.150117"
+        },
+        {
+          "id": "7783e860",
+          "category": "username_found",
+          "source": "Linkedin",
+          "severity": "low",
+          "title": "Username found on Linkedin",
+          "description": "The username 'dhruvil' was found on Linkedin.",
+          "url": "https://linkedin.com/in/dhruvil",
+          "found_at": "2026-01-28 11:01:57.150147"
+        },
+        {
+          "id": "a559bf29",
+          "category": "username_found",
+          "source": "Reddit",
+          "severity": "low",
+          "title": "Username found on Reddit",
+          "description": "The username 'dhruvil' was found on Reddit.",
+          "url": "https://reddit.com/user/dhruvil",
+          "found_at": "2026-01-28 11:01:57.150176"
+        }
+      ],
+      "recommendations": [
+        "\ud83d\udcf1 Review privacy settings on your social media accounts.",
+        "\u2705 Your digital footprint is relatively secure. Keep monitoring regularly.",
+        "\ud83d\udd0d Enable two-factor authentication on all important accounts.",
+        "\ud83d\uddd1\ufe0f Delete accounts you no longer use to reduce your attack surface."
+      ],
+      "status": "completed",
+      "progress": 100,
+      "started_at": "2026-01-28 11:01:56.229486",
+      "completed_at": "2026-01-28T11:01:57.245111",
+      "error_message": null
     }
   ]
 }

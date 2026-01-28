@@ -127,6 +127,13 @@ class ScanService:
                 'duration_ms': duration_ms
             })
             
+            # Log scan activity
+            self.db.log_activity(
+                user_id=scan['user_id'],
+                action='scan',
+                details={'scan_type': scan['scan_type'], 'target': scan['target'], 'duration_ms': duration_ms}
+            )
+            
             # Update user stats
             self._update_user_stats(scan['user_id'], scan['scan_type'])
             

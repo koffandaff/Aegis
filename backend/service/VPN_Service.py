@@ -1,23 +1,62 @@
 from datetime import datetime
 import uuid
+import os
 from typing import List, Optional, Dict
 from model.VPN_Model import VPNConfigRequest, WireGuardRequest, VPNConfigResponse, VPNKeys
 from utils.vpn_tools import vpn_tools
+from utils.pki_manager import pki_manager
 from model.Auth_Model import db  # Using the shared TempDb instance
 
+
 class VPNService:
+    """
+    VPN Service with REAL PKI infrastructure.
+    
+    Generates valid X.509 certificates that work with OpenVPN.
+    Requires a real OpenVPN server to connect to.
+    """
     
     def __init__(self):
         # In a real app, we would store these in a database
         if not hasattr(db, 'vpn_configs'):
             db.vpn_configs = {} 
 
+        # VPN Server configuration from environment
+        self.vpn_server_ip = os.getenv("VPN_SERVER_IP", "your.server.ip.here")
+        self.vpn_server_port = int(os.getenv("VPN_SERVER_PORT", "1194"))
+        self.vpn_protocol = os.getenv("VPN_PROTOCOL", "udp")
+
         # Defined VPN Servers for our "Service"
+        # In production, these would point to real server endpoints
         self.available_servers = [
-            {"id": "us-east", "name": "USA - New York", "address": "us-east.fsociety.vpn", "region": "Americas", "load": "42%"},
-            {"id": "eu-central", "name": "Germany - Frankfurt", "address": "de-fra.fsociety.vpn", "region": "Europe", "load": "18%"},
-            {"id": "asia-east", "name": "Japan - Tokyo", "address": "jp-tk.fsociety.vpn", "region": "Asia", "load": "65%"},
-            {"id": "in-west", "name": "India - Mumbai", "address": "in-mum.fsociety.vpn", "region": "Asia", "load": "20%"}
+            {
+                "id": "us-east", 
+                "name": "USA - New York", 
+                "address": self.vpn_server_ip,  # All use same server for now
+                "region": "Americas", 
+                "load": "42%"
+            },
+            {
+                "id": "eu-central", 
+                "name": "Germany - Frankfurt", 
+                "address": self.vpn_server_ip, 
+                "region": "Europe", 
+                "load": "18%"
+            },
+            {
+                "id": "asia-east", 
+                "name": "Japan - Tokyo", 
+                "address": self.vpn_server_ip, 
+                "region": "Asia", 
+                "load": "65%"
+            },
+            {
+                "id": "in-west", 
+                "name": "India - Mumbai", 
+                "address": self.vpn_server_ip, 
+                "region": "Asia", 
+                "load": "20%"
+            }
         ]
 
     def get_available_servers(self) -> List[Dict]:
@@ -26,43 +65,43 @@ class VPNService:
 
     def generate_openvpn_config(self, request: VPNConfigRequest, user_id: str) -> VPNConfigResponse:
         """
-        Generate an OpenVPN configuration.
-        """
-        import base64
-        import secrets
+        Generate an OpenVPN configuration with REAL certificates.
         
-        # If it's a server from our list, we could customize even more
+        Uses the PKI manager to generate valid X.509 certificates
+        signed by our Certificate Authority.
+        """
+        # Determine server name and ID
         server_name = f"Fsociety-{request.server_address}"
         server_id = "custom"
         for s in self.available_servers:
-            if s['address'] == request.server_address:
+            if s['address'] == request.server_address or s['id'] in request.server_address:
                 server_name = s['name']
                 server_id = s['id']
                 break
 
-        # Generate realistic-looking but simulated certificates
-        # These are properly formatted PEM blocks with valid base64 content
-        def generate_fake_pem(label: str, size: int = 256) -> str:
-            random_bytes = secrets.token_bytes(size)
-            b64_content = base64.b64encode(random_bytes).decode('ascii')
-            # Split into 64-char lines for proper PEM format
-            lines = [b64_content[i:i+64] for i in range(0, len(b64_content), 64)]
-            return f"-----BEGIN {label}-----\n" + "\n".join(lines) + f"\n-----END {label}-----"
-
-        mock_ca = generate_fake_pem("CERTIFICATE", 512)
-        mock_cert = generate_fake_pem("CERTIFICATE", 384)
-        mock_key = generate_fake_pem("PRIVATE KEY", 256)
-        
-        config_content = vpn_tools.generate_openvpn_config(
-            server_ip=request.server_address,
-            port=request.port,
-            protocol=request.protocol,
-            ca_cert=mock_ca,
-            client_cert=mock_cert,
-            client_key=mock_key
-        )
-        
+        # Create unique client name for certificate
         config_id = str(uuid.uuid4())
+        client_name = f"{user_id}_{server_id}_{config_id[:8]}"
+        
+        # Generate REAL client certificate using PKI
+        client_cert, client_key = pki_manager.generate_client_certificate(client_name)
+        
+        # Get CA certificate
+        ca_cert = pki_manager.get_ca_certificate()
+        
+        # Get TLS-Auth key
+        ta_key = pki_manager.get_ta_key()
+        
+        # Build OpenVPN config with real certs
+        config_content = self._build_openvpn_config(
+            server_ip=self.vpn_server_ip,
+            port=self.vpn_server_port,
+            protocol=self.vpn_protocol,
+            ca_cert=ca_cert,
+            client_cert=client_cert,
+            client_key=client_key,
+            ta_key=ta_key
+        )
         
         # Create filename: username_fsociety_servername
         safe_server_name = server_id.replace("-", "_").replace(" ", "_")
@@ -81,6 +120,86 @@ class VPNService:
         # Store in DB
         db.vpn_configs[config_id] = config.model_dump()
         
+        # Log VPN activity
+        db.log_activity(
+            user_id=user_id,
+            action='vpn_generate',
+            details={'server': server_name, 'type': 'openvpn'}
+        )
+        
+        return config
+
+    def _build_openvpn_config(
+        self, 
+        server_ip: str, 
+        port: int, 
+        protocol: str,
+        ca_cert: str,
+        client_cert: str,
+        client_key: str,
+        ta_key: str
+    ) -> str:
+        """
+        Build a complete OpenVPN configuration file with embedded certificates.
+        """
+        config = f"""# Fsociety VPN - OpenVPN Client Configuration
+# Generated: {datetime.utcnow().isoformat()}
+# This is a REAL configuration with valid certificates
+
+client
+dev tun
+proto {protocol}
+remote {server_ip} {port}
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+
+# Security settings
+remote-cert-tls server
+cipher AES-256-GCM
+auth SHA256
+key-direction 1
+
+# Logging
+verb 3
+mute 20
+
+# ==========================================================
+# TROUBLESHOOTING (delete this section after reading)
+# ==========================================================
+# If connection hangs/times out, you likely have a PORT FORWARDING issue.
+#
+# FOR LOCAL TESTING (same Windows machine as WSL server):
+# Change the "remote" line above to: remote 127.0.0.1 {port}
+#
+# FOR EXTERNAL CONNECTIONS:
+# 1. Forward UDP {port} from Windows to WSL:
+#    netsh interface portproxy add v4tov4 listenport={port} listenaddress=0.0.0.0 connectport={port} connectaddress=<WSL_IP>
+# 2. Allow UDP {port} in Windows Firewall
+# 3. Forward UDP {port} on your router to your Windows machine
+# ==========================================================
+
+# Certificate Authority
+<ca>
+{ca_cert.strip()}
+</ca>
+
+# Client Certificate
+<cert>
+{client_cert.strip()}
+</cert>
+
+# Client Private Key
+<key>
+{client_key.strip()}
+</key>
+
+# TLS-Auth Key
+<tls-auth>
+{ta_key.strip()}
+</tls-auth>
+"""
         return config
 
     def generate_wireguard_keys(self) -> VPNKeys:
@@ -137,5 +256,13 @@ class VPNService:
             if config_data['user_id'] == user_id:
                 user_configs.append(VPNConfigResponse(**config_data))
         return user_configs
+    
+    def get_server_setup_files(self) -> Dict:
+        """
+        Get all files needed to set up the OpenVPN server.
+        Returns dict with all PKI files for server configuration.
+        """
+        return pki_manager.get_server_files()
+
 
 vpn_service = VPNService()

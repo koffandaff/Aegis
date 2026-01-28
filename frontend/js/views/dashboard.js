@@ -3,6 +3,10 @@ import Api from '../api.js';
 import Components from '../components.js';
 
 class DashboardView {
+    constructor() {
+        this.intervals = [];
+    }
+
     async render() {
         return `
             ${Components.renderNavbar()}
@@ -54,27 +58,68 @@ class DashboardView {
     async afterRender() {
         document.getElementById('logout-btn').addEventListener('click', () => Auth.logout());
 
-        try {
-            // Load History for scan count
-            const history = await Api.get('/scans/user/history');
-            document.getElementById('stat-total-scans').textContent = history.total || 0;
+        // Initial load
+        await this.loadStats();
+        await this.loadSystemStatus();
 
-            // Load System Status (Dynamic stats)
-            // We use the root/health but let's call the dedicated status if available
-            // Note: Our backend has @app.get('/status')
+        // Start live updates
+        this.startLiveUpdates();
+    }
+
+    async loadStats() {
+        try {
+            const history = await Api.get('/scans/user/history');
+            const statEl = document.getElementById('stat-total-scans');
+            if (statEl) statEl.textContent = history?.total || 0;
+        } catch (error) {
+            console.error('Failed to load scan stats:', error);
+        }
+    }
+
+    async loadSystemStatus() {
+        try {
             const response = await fetch('http://localhost:8000/status');
             const statusData = await response.json();
 
             if (statusData.system) {
-                document.getElementById('stat-cpu').textContent = statusData.system.cpu_usage || 'N/A';
-                document.getElementById('stat-memory').textContent = statusData.system.memory_usage || 'N/A';
-                document.getElementById('stat-disk').textContent = statusData.system.disk_usage || 'N/A';
-                document.getElementById('stat-os').textContent = statusData.system.platform || 'N/A';
-                document.getElementById('stat-uptime').textContent = statusData.system.uptime || 'N/A';
+                const cpuEl = document.getElementById('stat-cpu');
+                const memEl = document.getElementById('stat-memory');
+                const diskEl = document.getElementById('stat-disk');
+                const osEl = document.getElementById('stat-os');
+                const uptimeEl = document.getElementById('stat-uptime');
+
+                if (cpuEl) cpuEl.textContent = statusData.system.cpu_usage || 'N/A';
+                if (memEl) memEl.textContent = statusData.system.memory_usage || 'N/A';
+                if (diskEl) diskEl.textContent = statusData.system.disk_usage || 'N/A';
+                if (osEl) osEl.textContent = statusData.system.platform || 'N/A';
+                if (uptimeEl) uptimeEl.textContent = statusData.system.uptime || 'N/A';
             }
         } catch (error) {
-            console.error('Failed to load dashboard stats:', error);
+            console.error('Failed to load system status:', error);
         }
+    }
+
+    startLiveUpdates() {
+        // Clear any existing intervals
+        this.stopLiveUpdates();
+
+        // System status - refresh every 5 seconds
+        this.intervals.push(setInterval(() => {
+            this.loadSystemStatus();
+        }, 5000));
+
+        // Scan stats - refresh every 30 seconds
+        this.intervals.push(setInterval(() => {
+            this.loadStats();
+        }, 30000));
+
+        // Cleanup on navigation
+        window.addEventListener('hashchange', () => this.stopLiveUpdates(), { once: true });
+    }
+
+    stopLiveUpdates() {
+        this.intervals.forEach(interval => clearInterval(interval));
+        this.intervals = [];
     }
 }
 

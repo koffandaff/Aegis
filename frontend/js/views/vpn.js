@@ -22,7 +22,7 @@ class VpnView {
                 <div style="flex: 1; padding: 2rem; overflow-y: auto;">
                     <h1 class="page-title fade-in">Fsociety Secure Tunnel</h1>
                     
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; max-width: 1200px; margin: 0 auto;">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; max-width: 1200px; margin: 0 auto; margin-bottom: 2rem;">
                         
                         <!-- Connection Center -->
                         <div class="card glass fade-in" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; position: relative; overflow: hidden;">
@@ -53,9 +53,9 @@ class VpnView {
 
                             <!-- Download Ready Action (Hidden initially) -->
                             <div id="download-action" style="display: none; text-align: center; margin-top: 1rem;">
-                                <div style="font-size: 1.1rem; color: var(--primary); margin-bottom: 0.5rem;">Profile Generated Successfully</div>
+                                <div style="font-size: 1.1rem; color: var(--primary); margin-bottom: 0.5rem;">Secure Tunnel Ready</div>
                                 <button id="dl-config-btn" class="btn" style="display: flex; align-items: center; gap: 0.5rem; margin: 0 auto;">
-                                    <span class="material-symbols-outlined">download</span> Download Profile (.ovpn)
+                                    <span class="material-symbols-outlined">download</span> Download VPN Profile (.ovpn)
                                 </button>
                             </div>
                         </div>
@@ -79,6 +79,40 @@ class VpnView {
                         </div>
 
                     </div>
+
+                    <!-- Server Node Administration (Admin Only) -->
+                    ${this.currentUser?.role === 'admin' ? `
+                    <div class="card glass fade-in" style="max-width: 1200px; margin: 0 auto 2rem auto; border-left: 4px solid var(--secondary);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <h3 style="color: var(--secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span class="material-symbols-outlined">admin_panel_settings</span> Server Node Administration
+                                </h3>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                                    Use the following command on your Linux/WSL machine to deploy a functional VPN server node.
+                                </p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div id="node-ip-badge" style="background: rgba(0,255,157,0.1); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; border: 1px solid var(--primary);">
+                                    MASTER IP: 106.215.155.126
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(0,0,0,0.4); padding: 1.2rem; border-radius: 8px; position: relative;">
+                            <code id="setup-command" style="color: var(--secondary); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">
+                                sudo python3 setup_vpn_server.py
+                            </code>
+                            <button class="btn-outline" style="position: absolute; right: 1rem; top: 0.8rem; padding: 4px 10px; font-size: 0.7rem; color: var(--secondary); border-color: var(--secondary);" 
+                                    onclick="navigator.clipboard.writeText('sudo python3 setup_vpn_server.py'); Utils.showToast('Copied to clipboard!', 'info')">
+                                COPY
+                            </button>
+                        </div>
+                        <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted);">
+                             ℹ️ Ensure the Fsociety backend is running with <code>--host 0.0.0.0</code> for the node to sync PKI certificates.
+                        </div>
+                    </div>
+                    ` : ''}
 
                     <!-- Usage Guide Section -->
                     <div class="card glass fade-in" style="margin-top: 2rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
@@ -139,10 +173,12 @@ class VpnView {
 
                         </div>
 
-                        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,165,2,0.1); border-left: 3px solid #ffa502; border-radius: 4px;">
-                            <strong style="color: #ffa502;">⚠️ Demo Notice:</strong>
+                        <div id="server-status-notice" style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,255,157,0.1); border-left: 3px solid var(--primary); border-radius: 4px;">
+                            <strong style="color: var(--primary);">✅ Real Certificates:</strong>
                             <span style="color: var(--text-muted); font-size: 0.85rem;">
-                                These are simulated VPN configurations for demonstration purposes. The certificates are randomly generated and will not connect to a real VPN server.
+                                These configurations use valid X.509 certificates signed by the Fsociety CA. 
+                                To connect, you need an OpenVPN server configured with the matching PKI files.
+                                See <code>docs/vpn_server_setup.md</code> for setup instructions.
                             </span>
                         </div>
                     </div>
@@ -176,26 +212,51 @@ class VpnView {
             dlAction.style.display = 'none';
             connectBtn.disabled = true;
             connectBtn.style.opacity = '0.5';
-            statusText.textContent = 'GENERATING PROFILE...';
+            statusText.textContent = 'SECURE HANDSHAKE...';
             statusText.style.color = '#ffa502';
 
-            // Start Progress Simulation
-            await Utils.visualizeProgress('vpn-connect', 2000,
-                ['Generating Keys...', 'Creating Certificates...', 'Building Config...', 'Finalizing...']);
+            // Start Progress Simulation AND Backend Call simultaneously for real feel
+            const progressPromise = Utils.visualizeProgress('vpn-connect', 2500,
+                ['Initializing RSA...', 'Exchanging Keys...', 'Signing X.509 Certificate...', 'Embedding TLS-Auth...', 'Finalizing Profile...']);
 
-            // "Connection" Complete
-            statusText.textContent = 'PROFILE READY';
-            statusText.style.color = 'var(--primary)';
-            connectBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 3rem;">check_circle</span>READY';
-            connectBtn.style.borderColor = 'var(--primary)';
-            connectBtn.style.boxShadow = '0 0 50px rgba(0,255,157,0.4)';
-            connectBtn.style.animation = 'none';
+            const configPromise = Api.post('/vpn/openvpn', {
+                server_address: this.selectedServer.address,
+                port: 1194,
+                protocol: 'udp'
+            });
 
-            dlAction.style.display = 'block';
-            Utils.showToast('Profile ready for download!', 'success');
+            try {
+                const [_, response] = await Promise.all([progressPromise, configPromise]);
 
-            // Setup Download Handler
-            dlBtn.onclick = () => this.triggerDownload();
+                if (response && response.config_content) {
+                    this.latestConfig = response;
+
+                    // "Connection" Complete
+                    statusText.textContent = 'TUNNEL READY';
+                    statusText.style.color = 'var(--primary)';
+                    connectBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 3rem;">verified_user</span>READY';
+                    connectBtn.disabled = false;
+                    connectBtn.style.opacity = '1';
+                    connectBtn.style.borderColor = 'var(--primary)';
+                    connectBtn.style.boxShadow = '0 0 50px rgba(0,255,157,0.4)';
+                    connectBtn.style.animation = 'none';
+
+                    dlAction.style.display = 'block';
+                    Utils.showToast('Secure profile generated!', 'success');
+                    this.loadConfigs();
+
+                    // Setup Download Handler
+                    dlBtn.onclick = () => this.downloadLatest();
+                } else {
+                    throw new Error('Invalid response');
+                }
+            } catch (err) {
+                statusText.textContent = 'CONNECTION FAILED';
+                statusText.style.color = '#ff4757';
+                connectBtn.disabled = false;
+                connectBtn.style.opacity = '1';
+                Utils.showToast('Failed to generate secure tunnel.', 'error');
+            }
         });
     }
 
@@ -265,33 +326,23 @@ class VpnView {
         } catch (e) { console.error(e); }
     }
 
-    async triggerDownload() {
-        if (!this.selectedServer) return;
+    async downloadLatest() {
+        if (!this.latestConfig) return;
 
-        try {
-            const srv = this.selectedServer;
-            const response = await Api.post('/vpn/openvpn', {
-                server_address: srv.address,
-                port: 1194,
-                protocol: 'udp'
-            });
+        const response = this.latestConfig;
+        const srv = this.selectedServer;
 
-            if (response && response.config_content) {
-                const blob = new Blob([response.config_content], { type: 'application/x-openvpn-profile' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                // Use the filename from backend if available, otherwise generate one
-                const filename = response.filename || `${this.currentUser?.username || 'user'}_fsociety_${srv.id}`;
-                a.download = `${filename}.ovpn`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-                Utils.showToast('Profile downloaded! Check guide below for usage.', 'success');
-                this.loadConfigs();
-            }
-        } catch (err) { Utils.showToast(err.message, 'error'); }
+        const blob = new Blob([response.config_content], { type: 'application/x-openvpn-profile' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const filename = response.filename || `${this.currentUser?.username || 'user'}_fsociety_${srv.id}`;
+        a.download = `${filename}.ovpn`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        Utils.showToast('Profile downloaded! Use OpenVPN Connect to connect.', 'success');
     }
 
     async loadConfigs() {

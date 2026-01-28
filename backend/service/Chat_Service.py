@@ -113,6 +113,13 @@ class ChatService:
                 # Save assistant response to database
                 if full_response:
                     self.db.add_message(session_id, user_id, "assistant", full_response)
+                    # Log chat activity
+                    from model.Auth_Model import db as auth_db
+                    auth_db.log_activity(
+                        user_id=user_id,
+                        action='chat',
+                        details={'session_id': session_id, 'message_preview': message[:50]}
+                    )
                     
         except httpx.TimeoutException:
             yield json.dumps({"error": "Ollama request timed out"})
