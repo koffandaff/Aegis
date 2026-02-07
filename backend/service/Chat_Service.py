@@ -25,7 +25,10 @@ class ChatService:
     async def check_ollama_health(self) -> Dict[str, bool]:
         """Check if Ollama is running and the specific model is available"""
         if not self.ollama_url:
+            print("DEBUG: OLLAMA_URL is missing or empty")
             return {"connected": False, "model_available": False}
+        
+        print(f"DEBUG: Checking Ollama health at {self.ollama_url}")
             
         try:
             # Bypass Ngrok browser warning
@@ -52,12 +55,17 @@ class ChatService:
 
                 return {
                     "connected": True, 
-                    "model_available": model_available
+                    "model_available": model_available,
+                    "debug_url": self.ollama_url
                 }
         except Exception as e:
             print(f"Ollama health check failed: {e}")
-            return {"connected": False, "model_available": False}
+            return {"connected": False, "model_available": False, "debug_url": self.ollama_url}
     
+    def _format_sse(self, data: dict) -> str:
+        """Format data as Server-Sent Event"""
+        return f"data: {json.dumps(data)}\n\n"
+
     async def _stream_response(self, session_id: str, user_id: str, context: List[Dict], username: str) -> AsyncGenerator[str, None]:
         """Internal helper to stream response from Ollama"""
         
@@ -103,7 +111,7 @@ Your Role:
                     json=ollama_payload
                 ) as response:
                     if response.status_code != 200:
-                        yield json.dumps({"error": f"Ollama error: {response.status_code}"})
+                        yield self._format_sse({"error": f"Ollama error: {response.status_code}"})
                         return
                     
                     async for line in response.aiter_lines():
@@ -114,10 +122,10 @@ Your Role:
                                 if "message" in data and "content" in data["message"]:
                                     content = data["message"]["content"]
                                     full_response += content
-                                    yield json.dumps({"content": content, "type": "token"})
+                                    yield self._format_sse({"content": content, "type": "token"})
                                 
                                 if data.get("done", False):
-                                    yield json.dumps({"type": "done"})
+                                    yield self._format_sse({"type": "done"})
                                     break
                                     
                             except json.JSONDecodeError:
@@ -133,17 +141,16 @@ Your Role:
                         details={'session_id': session_id, 'length': len(full_response)}
                     )
                     
-
         except httpx.TimeoutException:
-            yield json.dumps({"error": "Ollama request timed out. The model is taking too long to respond."})
+            yield self._format_sse({"error": "Ollama request timed out. The model is taking too long to respond."})
         except httpx.ConnectError:
-            yield json.dumps({"error": "Connection refused. Ensure Ollama is running on port 11434."})
+            yield self._format_sse({"error": "Connection refused. Ensure Ollama is running on port 11434."})
         except httpx.HTTPStatusError as e:
-            yield json.dumps({"error": f"Ollama returned HTTP {e.response.status_code}: {e.response.text}"})
+            yield self._format_sse({"error": f"Ollama returned HTTP {e.response.status_code}: {e.response.text}"})
         except Exception as e:
             import traceback
             traceback.print_exc()
-            yield json.dumps({"error": f"Internal Error: {str(e)}"})
+            yield self._format_sse({"error": f"Internal Error: {str(e)}"})
 
     async def send_message_stream(
         self, 
@@ -160,7 +167,7 @@ Your Role:
         if session_id:
             session = self.db.get_session(session_id, user_id)
             if not session:
-                yield json.dumps({"error": "Session not found"})
+                yield self._format_sse({"error": "Session not found"})
                 return
             # Add user message to database for existing session
             self.db.add_message(session_id, user_id, "user", message)
@@ -168,7 +175,7 @@ Your Role:
             # Create new session (creates message internally)
             session = self.db.create_session(user_id, message)
             session_id = session.id
-            yield json.dumps({"session_id": session_id, "type": "session_created"})
+            yield self._format_sse({"session_id": session_id, "type": "session_created"})
         
         # Get context messages for Ollama (Increased Limit)
         context = self.db.get_context_messages(session_id, user_id, limit=200)
@@ -191,7 +198,7 @@ Your Role:
         updated_messages = self.db.edit_message(session_id, user_id, message_id, new_content)
         
         if updated_messages is None:
-            yield json.dumps({"error": "Failed to edit message"})
+            yield self._format_sse({"error": "Failed to edit message"})
             return
             
         # Get updated context

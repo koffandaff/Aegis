@@ -16,45 +16,62 @@ def test_chat():
         print(f"Health Response: {json.dumps(response.json(), indent=2)}")
         
         if not response.json().get("ollama_connected"):
-            print("❌ Ollama not connected!")
-            return
+            print(f"❌ Ollama not connected! URL used: {response.json().get('debug_url')}")
+            # continue anyway to test auth
         
-        if not response.json().get("model_available"):
-            print("❌ Model not available!")
-            return
-
-    except Exception as e:
-        print(f"❌ Health check failed: {e}")
-        return
-
-    # 2. Login
-    print("\nLogging in...")
-    try:
+        # 2. Login
+        print("\nLogging in...")
+        email = "testuser@example.com"
+        password = "password123"
+        
         auth_response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "testuser@example.com", 
-            "password": "password123"
+            "email": email, 
+            "password": password
         })
-        if auth_response.status_code != 200:
-            print(f"❌ Login failed: {auth_response.text}")
-            # Try signup if login fails
-            print("Trying signup...")
+        
+        if auth_response.status_code == 200:
+            token = auth_response.json()["access_token"]
+            print("✅ Login successful")
+        else:
+            print(f"Login failed: {auth_response.status_code}. Trying signup...")
             signup_response = requests.post(f"{BASE_URL}/api/auth/signup", json={
-                "username": "chattest",
-                "email": "testuser@example.com",
-                "password": "password123",
+                "username": f"chattest_{int(time.time())}", 
+                "email": email,
+                "password": password,
                 "full_name": "Chat Tester"
             })
             if signup_response.status_code == 201:
                 print("✅ Signup successful, logging in...")
                 auth_response = requests.post(f"{BASE_URL}/api/auth/login", json={
-                    "email": "testuser@example.com", 
-                    "password": "password123"
+                    "email": email, 
+                    "password": password
                 })
+                token = auth_response.json()["access_token"]
+            elif "already registered" in signup_response.text or "IntegrityError" in signup_response.text:
+                 # Should have logged in then? Maybe password mismatch.
+                 print("User exists but login failed. Changing email...")
+                 email = f"testuser_{int(time.time())}@example.com"
+                 signup_response = requests.post(f"{BASE_URL}/api/auth/signup", json={
+                    "username": f"chattest_{int(time.time())}", 
+                    "email": email,
+                    "password": password,
+                    "full_name": "Chat Tester"
+                })
+                 if signup_response.status_code == 201:
+                     token = signup_response.json().get("access_token") # Some signups return token? No, usually not.
+                     # Login with new user
+                     auth_response = requests.post(f"{BASE_URL}/api/auth/login", json={
+                        "email": email, 
+                        "password": password
+                    })
+                     token = auth_response.json()["access_token"]
+                 else:
+                     print(f"❌ Signup failed: {signup_response.text}")
+                     return
             else:
                  print(f"❌ Signup failed: {signup_response.text}")
                  return
 
-        token = auth_response.json()["access_token"]
         headers = {"Authorization": f"Bearer {token}"}
         print("✅ Login successful")
 
