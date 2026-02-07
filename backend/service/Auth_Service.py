@@ -112,7 +112,7 @@ class AuthService:
             'phone': user_data.get('phone'),
             'company': user_data.get('company'),
             'bio': user_data.get('bio'),
-            'role': user_data.get('role', 'user'),
+            'role': 'user',  # SECURITY: Force role to 'user' to prevent privilege escalation
             'is_active': True,
         })
         

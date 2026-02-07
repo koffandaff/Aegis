@@ -17,7 +17,7 @@ class UserCreate(BaseModel):
     phone: Optional[str] = None
     company: Optional[str] = None
     bio: Optional[str] = None
-    role: UserRole = UserRole.USER  # Default role is user
+    # role field removed for security - forcing 'user' in service
 
     @validator('password')
     def password_strength(cls, v):

@@ -147,28 +147,6 @@ async def status_check():
             'error': 'System stats unavailable'
         }
 
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """Ensure CORS headers are present even on 500 errors"""
-    from fastapi.responses import JSONResponse
-    import traceback
-    
-    error_detail = str(exc)
-    print(f"[CRITICAL ERROR] {error_detail}\n{traceback.format_exc()}")
-    
-    response = JSONResponse(
-        status_code=500,
-        content={"detail": "Internal Server Error", "error": error_detail}
-    )
-    
-    # Manually add CORS headers since middleware might be skipped on exception
-    origin = request.headers.get("origin")
-    if origin:
-        response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        
-    return response
-    
     # Check Ollama availability
     ai_available = False
     try:
@@ -194,3 +172,26 @@ async def global_exception_handler(request: Request, exc: Exception):
             'database': f"{os.getenv('DATABASE_URL', 'sqlite').split('://')[0].upper()} (active)"
         }
     }
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Ensure CORS headers are present even on 500 errors"""
+    from fastapi.responses import JSONResponse
+    import traceback
+    
+    error_detail = str(exc)
+    print(f"[CRITICAL ERROR] {error_detail}\n{traceback.format_exc()}")
+    
+    response = JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "error": error_detail}
+    )
+    
+    # Manually add CORS headers since middleware might be skipped on exception
+    origin = request.headers.get("origin")
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        
+    return response
+    

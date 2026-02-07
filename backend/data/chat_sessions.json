@@ -887,6 +887,27 @@
       ],
       "created_at": "2026-02-07T06:55:47.777233Z",
       "updated_at": "2026-02-07T06:55:53.752663Z"
+    },
+    {
+      "id": "ef11cbab-b212-4517-a617-5efaceea933b",
+      "user_id": "64d7378a-ed49-4b43-988f-e527e48c7688",
+      "title": "Hello, are you working via API...",
+      "messages": [
+        {
+          "id": "870f947f-751c-48a8-ac1a-1a02dec70dc8",
+          "role": "user",
+          "content": "Hello, are you working via API?",
+          "timestamp": "2026-02-07T18:38:31.646267Z"
+        },
+        {
+          "id": "1d693244-7830-4576-8379-3d7b00953a77",
+          "role": "assistant",
+          "content": "Yes, I am working through APIs to facilitate communication and data exchange for the Fsociety cybersecurity platform. How can I assist you today?",
+          "timestamp": "2026-02-07T18:38:33.021407Z"
+        }
+      ],
+      "created_at": "2026-02-07T18:38:31.646221Z",
+      "updated_at": "2026-02-07T18:38:33.021481Z"
     }
   ]
 }
