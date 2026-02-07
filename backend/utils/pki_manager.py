@@ -38,8 +38,14 @@ class PKIManager:
             pki_dir: Directory to store PKI files. Defaults to backend/data/pki/
         """
         if pki_dir is None:
-            # Default to backend/data/pki/
-            base_dir = Path(__file__).parent.parent / "data" / "pki"
+            # Check if running on Vercel or read-only environment
+            if os.getenv("VERCEL") or os.access("/", os.W_OK) is False:
+                # Use /tmp for serverless/read-only environments
+                base_dir = Path("/tmp/pki")
+                print(f"[PKI] Detected read-only/serverless environment. Using {base_dir}")
+            else:
+                # Default to backend/data/pki/
+                base_dir = Path(__file__).parent.parent / "data" / "pki"
         else:
             base_dir = Path(pki_dir)
         
@@ -51,12 +57,16 @@ class PKIManager:
         self.server_cert_path = base_dir / "server.crt"
         self.server_key_path = base_dir / "server.key"
         
-        # Ensure PKI directory exists
-        self.pki_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Initialize CA if not exists
-        if not self.ca_cert_path.exists():
-            self._initialize_pki()
+        try:
+            # Ensure PKI directory exists
+            self.pki_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Initialize CA if not exists
+            if not self.ca_cert_path.exists():
+                self._initialize_pki()
+        except OSError as e:
+            print(f"[PKI] WARNING: Could not initialize PKI at {self.pki_dir}: {e}")
+            print("[PKI] VPN certificate generation will likely fail or use mock data.")
     
     def _initialize_pki(self):
         """Initialize the complete PKI infrastructure."""
