@@ -78,10 +78,9 @@ class Components {
             <div id="${id}-text" style="text-align: center; margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted); display: none;">Initializing...</div>
         `;
     }
-}
 
     static renderModal(id, title, content, actions) {
-    return `
+        return `
             <div id="${id}" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center;">
                 <div class="card glass modal-content" style="max-width: 500px; width: 90%; animation: slideIn 0.3s ease;">
                     <h3 style="margin-bottom: 1rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
@@ -96,21 +95,21 @@ class Components {
                 </div>
             </div>
         `;
-}
+    }
 
     static showModal(id) {
-    const modal = document.getElementById(id);
-    if (modal) {
-        modal.style.display = 'flex';
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.style.display = 'flex';
+        }
     }
-}
 
     static hideModal(id) {
-    const modal = document.getElementById(id);
-    if (modal) {
-        modal.style.display = 'none';
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
-}
 }
 
 export default Components;
