@@ -121,6 +121,8 @@ class Utils {
                 }
             }, interval);
         });
+    }
+
     static maskIP(ip) {
         if (!ip) return '0.0.0.0';
         if (ip.includes(':')) { // IPv6
