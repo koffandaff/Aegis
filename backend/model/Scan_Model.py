@@ -54,13 +54,14 @@ class VirusTotalRequest(BaseModel):
 # Scan Result Models
 class ScanResult(BaseModel):
     id: str
+    scan_number: Optional[int] = None
     user_id: str
     scan_type: ScanType
     target: str
     status: ScanStatus
     results: Optional[Dict] = None
     error: Optional[str] = None
-    started_at: str
+    started_at: Optional[str] = None
     completed_at: Optional[str] = None
     duration_ms: Optional[int] = None
 

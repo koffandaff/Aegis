@@ -52,11 +52,13 @@ app.add_middleware(
     allow_origins=[
         "https://reconauto.vercel.app",
         "https://reconauto-backend.vercel.app",
+        "https://fsociety-web-service.vercel.app",
         "http://localhost:5500",
         "http://127.0.0.1:5500",
         "http://localhost:8000",
         "http://127.0.0.1:8000"
     ],
+    allow_origin_regex=r"https://reconauto-.*\.vercel\.app",  # Support Vercel previews
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
@@ -138,12 +140,34 @@ async def status_check():
             'disk_usage': f"{psutil.disk_usage('/').percent}%",
             'uptime': str(uptime).split('.')[0]
         }
-    except ImportError:
+    except Exception:
         system_stats = {
             'python_version': sys.version.split()[0],
             'platform': platform.platform(),
-            'error': 'psutil not installed'
+            'error': 'System stats unavailable'
         }
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Ensure CORS headers are present even on 500 errors"""
+    from fastapi.responses import JSONResponse
+    import traceback
+    
+    error_detail = str(exc)
+    print(f"[CRITICAL ERROR] {error_detail}\n{traceback.format_exc()}")
+    
+    response = JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "error": error_detail}
+    )
+    
+    # Manually add CORS headers since middleware might be skipped on exception
+    origin = request.headers.get("origin")
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        
+    return response
     
     # Check Ollama availability
     ai_available = False
