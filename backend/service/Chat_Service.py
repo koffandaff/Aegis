@@ -137,6 +137,9 @@ Your Role:
                                         
                                     yield json.dumps({"type": "done"})
                                     break
+                                    
+                            except json.JSONDecodeError:
+                                continue
                     
         except httpx.TimeoutException:
             yield json.dumps({"error": "Ollama request timed out. The model is taking too long to respond."})
