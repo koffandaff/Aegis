@@ -16,22 +16,30 @@ class DashboardView {
                 <div style="flex: 1; padding: 2rem; overflow-y: auto;">
                     <h1 class="page-title fade-in" style="font-size: 2.5rem; margin-bottom: 2rem;">System Overview</h1>
                     
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                         <div class="card glass fade-in" style="animation-delay: 0.1s;">
                             <h3 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase;">Total Scans</h3>
                             <p id="stat-total-scans" style="font-size: 2.5rem; color: var(--primary); font-family: 'JetBrains Mono'; margin-top: 0.5rem; font-weight: bold;">-</p>
                         </div>
                         <div class="card glass fade-in" style="animation-delay: 0.2s;">
+                            <h3 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase;">Chat Sessions</h3>
+                            <p id="stat-chat-sessions" style="font-size: 2.5rem; color: #a55eea; font-family: 'JetBrains Mono'; margin-top: 0.5rem; font-weight: bold;">-</p>
+                        </div>
+                        <div class="card glass fade-in" style="animation-delay: 0.3s;">
+                            <h3 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase;">Total Messages</h3>
+                            <p id="stat-chat-messages" style="font-size: 2.5rem; color: #fd9644; font-family: 'JetBrains Mono'; margin-top: 0.5rem; font-weight: bold;">-</p>
+                        </div>
+                        <div class="card glass fade-in" style="animation-delay: 0.4s;">
                             <h3 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase;">CPU Usage</h3>
                             <p id="stat-cpu" style="font-size: 2.5rem; color: var(--secondary); font-family: 'JetBrains Mono'; margin-top: 0.5rem; font-weight: bold;">-</p>
                         </div>
-                        <div class="card glass fade-in" style="animation-delay: 0.3s;">
+                        <div class="card glass fade-in" style="animation-delay: 0.5s;">
                             <h3 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase;">Memory Usage</h3>
                             <p id="stat-memory" style="font-size: 2.5rem; color: #00e5ff; font-family: 'JetBrains Mono'; margin-top: 0.5rem; font-weight: bold;">-</p>
                         </div>
                     </div>
 
-                    <div class="card glass fade-in" style="animation-delay: 0.4s;">
+                    <div class="card glass fade-in" style="animation-delay: 0.6s;">
                         <h3 style="margin-bottom: 1.5rem;">System Status</h3>
                         <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">All core modules are functional. Operation "FS" is active.</p>
                         
@@ -68,11 +76,27 @@ class DashboardView {
 
     async loadStats() {
         try {
-            const history = await Api.get('/scans/user/history');
+            const [history, sessions] = await Promise.all([
+                Api.get('/scans/user/history'),
+                Api.get('/chat/sessions')
+            ]);
+
+            // Scans
             const statEl = document.getElementById('stat-total-scans');
             if (statEl) statEl.textContent = history?.total || 0;
+
+            // Chat Stats
+            const sessionsCount = sessions?.length || 0;
+            const messagesCount = sessions?.reduce((acc, s) => acc + (s.message_count || 0), 0) || 0;
+
+            const sessionEl = document.getElementById('stat-chat-sessions');
+            const msgEl = document.getElementById('stat-chat-messages');
+
+            if (sessionEl) sessionEl.textContent = sessionsCount;
+            if (msgEl) msgEl.textContent = messagesCount;
+
         } catch (error) {
-            console.error('Failed to load scan stats:', error);
+            console.error('Failed to load stats:', error);
         }
     }
 
@@ -108,7 +132,7 @@ class DashboardView {
             this.loadSystemStatus();
         }, 5000));
 
-        // Scan stats - refresh every 30 seconds
+        // Stats - refresh every 30 seconds
         this.intervals.push(setInterval(() => {
             this.loadStats();
         }, 30000));

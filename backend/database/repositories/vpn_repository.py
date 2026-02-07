@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 
 from database.models import VPNConfig, VPNServer
 from database.repositories.base import BaseRepository
@@ -18,7 +18,7 @@ class VPNRepository(BaseRepository[VPNConfig]):
             config_type=data.get("config_type", "openvpn"),
             filename=data.get("filename"),
             config_content=data.get("config_content"),
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
         self.db.add(config)
         self.db.commit()

@@ -19,6 +19,8 @@ class PlatformStats(BaseModel):
     total_phishing_checks: int
     total_vpn_configs: int
     total_reports: int
+    total_chat_sessions: int = 0
+    total_chat_messages: int = 0
 
 # User List Response
 class AdminUserResponse(BaseModel):

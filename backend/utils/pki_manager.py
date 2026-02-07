@@ -14,7 +14,7 @@ Uses the `cryptography` library to:
 
 import os
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Tuple, Optional
 
@@ -102,8 +102,8 @@ class PKIManager:
             .issuer_name(ca_subject)  # Self-signed
             .public_key(ca_key.public_key())
             .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.utcnow())
-            .not_valid_after(datetime.utcnow() + timedelta(days=3650))  # 10 years
+            .not_valid_before(datetime.now(timezone.utc))
+            .not_valid_after(datetime.now(timezone.utc) + timedelta(days=3650))  # 10 years
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=None),
                 critical=True
@@ -170,8 +170,8 @@ class PKIManager:
             .issuer_name(ca_cert.subject)
             .public_key(server_key.public_key())
             .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.utcnow())
-            .not_valid_after(datetime.utcnow() + timedelta(days=1825))  # 5 years
+            .not_valid_before(datetime.now(timezone.utc))
+            .not_valid_after(datetime.now(timezone.utc) + timedelta(days=1825))  # 5 years
             .add_extension(
                 x509.BasicConstraints(ca=False, path_length=None),
                 critical=True
@@ -310,8 +310,8 @@ class PKIManager:
             .issuer_name(ca_cert.subject)
             .public_key(client_key.public_key())
             .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.utcnow())
-            .not_valid_after(datetime.utcnow() + timedelta(days=365))  # 1 year
+            .not_valid_before(datetime.now(timezone.utc))
+            .not_valid_after(datetime.now(timezone.utc) + timedelta(days=365))  # 1 year
             .add_extension(
                 x509.BasicConstraints(ca=False, path_length=None),
                 critical=True

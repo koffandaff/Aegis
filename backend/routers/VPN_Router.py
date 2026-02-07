@@ -99,10 +99,9 @@ async def get_server_setup_files(
         # Authenticated via shared secret
         pass
     elif current_user:
-        # In production, add admin check here
-        # if current_user.get('role') != 'admin':
-        #     raise HTTPException(status_code=403, detail="Admin access required")
-        pass
+        # Require admin for JWT-authenticated access
+        if current_user.get('role') != 'admin':
+            raise HTTPException(status_code=403, detail="Admin access required")
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

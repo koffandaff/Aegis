@@ -3,6 +3,7 @@ Auth Router - SQLite Version
 
 Authentication endpoints: signup, login, logout, refresh, and user info.
 """
+import os
 from fastapi import APIRouter, HTTPException, Depends, status, Response, Request, Cookie
 from sqlalchemy.orm import Session
 
@@ -46,21 +47,28 @@ async def signup(
 async def login(
     login_data: UserLogin,
     response: Response,
-    auth_service: AuthService = Depends(get_auth_service)
+    request: Request,
+    auth_service: AuthService = Depends(get_auth_service),
+    _ = Depends(limiter.limit(limit=10, window=60))
 ):
     """Login and get token"""
     print(f"[AUTH] Login attempt for: {login_data.email}")
     try:
         result = auth_service.login_user(login_data.email, login_data.password)
         
+        # Record login IP
+        client_ip = request.client.host if request.client else None
+        if client_ip:
+            auth_service.record_login_ip(result['user']['id'], client_ip)
+        
         # Set refresh token in HttpOnly cookie
         response.set_cookie(
             key="refresh_token",
             value=result["refresh_token"],
             httponly=True,
-            secure=False, # Set to True in production with HTTPS
+            secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
             samesite="lax",
-            max_age=7 * 24 * 60 * 60 # 7 days
+            max_age=7 * 24 * 60 * 60  # 7 days
         )
         
         # Remove refresh_token from body response

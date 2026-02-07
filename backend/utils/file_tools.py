@@ -8,7 +8,7 @@ import math
 import time
 import json
 from typing import Dict, List, Optional, Tuple, BinaryIO
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from config.settings import settings
@@ -85,7 +85,7 @@ class FileTools:
         results = {
             'hash': hash_str,
             'hash_type': hash_type.value,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'reputation': {
                 'known_malicious': False,
                 'known_clean': False,
@@ -162,7 +162,7 @@ class FileTools:
         start_time = time.time()
         
         results = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'total_hashes': len(hashes),
             'malicious_count': 0,
             'clean_count': 0,
@@ -248,7 +248,7 @@ class FileTools:
             'hash_md5': None,
             'hash_sha1': None,
             'hash_sha256': None,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'is_executable': False,
             'is_archive': False,
             'is_encrypted': False,

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from database.repositories.user_repository import UserRepository
 from database.repositories.activity_repository import ActivityRepository
+from model.Chat_Model import chat_db
 
 
 class AdminService:
@@ -140,20 +141,26 @@ class AdminService:
                 total_vpn_configs += user.stats.vpn_configs or 0
                 total_reports += user.stats.reports_generated or 0
         
+        # Get chat stats
+        chat_stats = chat_db.get_global_stats()
+        
         return {
             'total_users': total_users,
             'active_users': active_users,
             'total_scans': total_scans,
             'total_phishing_checks': total_phishing_checks,
             'total_vpn_configs': total_vpn_configs,
-            'total_reports': total_reports
+            'total_reports': total_reports,
+            'total_chat_sessions': chat_stats.get('total_sessions', 0),
+            'total_chat_messages': chat_stats.get('total_messages', 0)
         }
     
     def search_activities(self, user_id: Optional[str] = None, 
                          action: Optional[str] = None,
                          date_from: Optional[str] = None,
                          date_to: Optional[str] = None,
-                         limit: int = 50) -> List[Dict]:
+                         limit: int = 50,
+                         skip: int = 0) -> List[Dict]:
         """Search activities across all users"""
         # Parse dates for repository
         d_from = None
@@ -176,7 +183,8 @@ class AdminService:
             action=action,
             date_from=d_from,
             date_to=d_to,
-            limit=limit
+            limit=limit,
+            skip=skip
         )
         
         return activities

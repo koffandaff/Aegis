@@ -94,7 +94,7 @@ class VpnView {
                             </div>
                             <div style="text-align: right;">
                                 <div id="node-ip-badge" style="background: rgba(0,255,157,0.1); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; border: 1px solid var(--primary);">
-                                    MASTER IP: 106.215.155.126
+                                    MASTER NODE: ACTIVE
                                 </div>
                             </div>
                         </div>

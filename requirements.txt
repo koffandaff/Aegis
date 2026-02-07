@@ -9,6 +9,8 @@ python-dotenv
 
 # Database
 sqlalchemy
+psycopg2-binary
+pydantic-settings
 
 # Authentication
 python-jose[cryptography]

@@ -6,7 +6,7 @@ import socket
 import time
 import hashlib
 from typing import Dict, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 import httpx
 from dns import resolver
@@ -49,7 +49,7 @@ class PhishingTools:
         start_time = time.time()
         results = {
             'url': url,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'domain': None,
             'final_url': None,
             'risk_score': 0.0,

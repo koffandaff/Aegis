@@ -5,7 +5,9 @@ Uses Ollama with Koffan/Cybiz:latest model
 import json
 import os
 import uuid
-from datetime import datetime
+import shutil
+import tempfile
+from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
@@ -16,9 +18,10 @@ from pydantic import BaseModel, Field
 
 class ChatMessage(BaseModel):
     """Individual chat message"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     role: str = Field(..., description="'user' or 'assistant'")
     content: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'))
 
 
 class ChatSession(BaseModel):
@@ -27,8 +30,8 @@ class ChatSession(BaseModel):
     user_id: str
     title: str = "New Chat"
     messages: List[ChatMessage] = []
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'))
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'))
 
 
 class ChatRequest(BaseModel):
@@ -68,18 +71,56 @@ class ChatDatabase:
         """Ensure database file and directory exist"""
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         if not os.path.exists(self.db_path):
-            self._save_data({"sessions": []})
+            self._atomic_save({"sessions": []})
     
     def _load_data(self) -> Dict:
         try:
             with open(self.db_path, 'r') as f:
-                return json.load(f)
-        except:
+                data = json.load(f)
+            
+            # Migration: Ensure all messages have IDs
+            modified = False
+            for session in data.get("sessions", []):
+                # Migrate timestamps to UTC (append Z)
+                if not session.get("created_at", "").endswith("Z"):
+                    session["created_at"] = session.get("created_at", datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'))
+                    modified = True
+                if not session.get("updated_at", "").endswith("Z"):
+                    session["updated_at"] = session.get("updated_at", datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'))
+                    modified = True
+                    
+                for msg in session.get("messages", []):
+                    if "id" not in msg:
+                        msg["id"] = str(uuid.uuid4())
+                        modified = True
+                    if not msg.get("timestamp", "").endswith("Z"):
+                        msg["timestamp"] = msg.get("timestamp", datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'))
+                        modified = True
+            
+            if modified:
+                self._atomic_save(data)
+                
+            return data
+        except Exception as e:
+            print(f"Error loading chat database: {e}")
             return {"sessions": []}
     
-    def _save_data(self, data: Dict):
-        with open(self.db_path, 'w') as f:
-            json.dump(data, f, indent=2, default=str)
+    def _atomic_save(self, data: Dict):
+        """Save data atomically using temp file to prevent locking issues"""
+        dir_name = os.path.dirname(self.db_path)
+        
+        # Create temp file in same directory
+        with tempfile.NamedTemporaryFile(mode='w', dir=dir_name, delete=False, encoding='utf-8') as tf:
+            json.dump(data, tf, indent=2, default=str)
+            temp_name = tf.name
+        
+        try:
+            # Atomic rename
+            shutil.move(temp_name, self.db_path)
+        except Exception as e:
+            print(f"Error saving chat database: {e}")
+            if os.path.exists(temp_name):
+                os.remove(temp_name)
     
     # Session Operations
     
@@ -94,7 +135,7 @@ class ChatDatabase:
         
         data = self._load_data()
         data["sessions"].append(session.dict())
-        self._save_data(data)
+        self._atomic_save(data)
         
         return session
     
@@ -110,8 +151,8 @@ class ChatDatabase:
             ChatSessionResponse(
                 id=s["id"],
                 title=s.get("title", "Untitled"),
-                created_at=s.get("created_at", datetime.utcnow()),
-                updated_at=s.get("updated_at", datetime.utcnow()),
+                created_at=s.get("created_at", datetime.now(timezone.utc)),
+                updated_at=s.get("updated_at", datetime.now(timezone.utc)),
                 message_count=len(s.get("messages", []))
             )
             for s in user_sessions
@@ -135,16 +176,41 @@ class ChatDatabase:
             if s["id"] == session_id and s.get("user_id") == user_id:
                 message = ChatMessage(role=role, content=content)
                 s["messages"].append(message.dict())
-                s["updated_at"] = datetime.utcnow().isoformat()
+                s["updated_at"] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
                 
                 # Update title if this is the first user message
                 if role == "user" and len([m for m in s["messages"] if m["role"] == "user"]) == 1:
                     s["title"] = content[:30] + "..." if len(content) > 30 else content
                 
-                self._save_data(data)
+                self._atomic_save(data)
                 return True
         
         return False
+
+    def edit_message(self, session_id: str, user_id: str, message_id: str, new_content: str) -> Optional[List[Dict]]:
+        """
+        Edit a message content and remove subsequent messages to allow regeneration.
+        Returns the updated message list (up to the edited message) or None if failed.
+        """
+        data = self._load_data()
+        
+        for s in data["sessions"]:
+            if s["id"] == session_id and s.get("user_id") == user_id:
+                messages = s["messages"]
+                # Find index of message to edit
+                edit_index = next((i for i, m in enumerate(messages) if m.get("id") == message_id), -1)
+                
+                if edit_index != -1 and messages[edit_index]["role"] == "user":
+                    # Update content
+                    messages[edit_index]["content"] = new_content
+                    # Truncate all messages after this one
+                    s["messages"] = messages[:edit_index + 1]
+                    s["updated_at"] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+                    
+                    self._atomic_save(data)
+                    return s["messages"]
+                    
+        return None
     
     def delete_session(self, session_id: str, user_id: str) -> bool:
         """Delete a session"""
@@ -157,7 +223,7 @@ class ChatDatabase:
         ]
         
         if len(data["sessions"]) < original_length:
-            self._save_data(data)
+            self._atomic_save(data)
             return True
         
         return False
@@ -168,8 +234,8 @@ class ChatDatabase:
         for s in data["sessions"]:
             if s["id"] == session_id and s.get("user_id") == user_id:
                 s["title"] = new_title
-                s["updated_at"] = datetime.utcnow().isoformat()
-                self._save_data(data)
+                s["updated_at"] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+                self._atomic_save(data)
                 return True
         return False
     
@@ -184,6 +250,21 @@ class ChatDatabase:
         recent = session.messages[-limit:]
         
         return [{"role": m.role, "content": m.content} for m in recent]
+    
+    def get_global_stats(self) -> Dict[str, int]:
+        """Get global chat statistics for admin panel"""
+        data = self._load_data()
+        sessions = data.get("sessions", [])
+        
+        total_sessions = len(sessions)
+        total_messages = sum(len(s.get("messages", [])) for s in sessions)
+        unique_users = len(set(s.get("user_id") for s in sessions if s.get("user_id")))
+        
+        return {
+            "total_sessions": total_sessions,
+            "total_messages": total_messages,
+            "active_users": unique_users
+        }
 
 
 # Global database instance

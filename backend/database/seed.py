@@ -4,7 +4,7 @@ Database Seeding - Initial data for the application
 Creates default admin user and demo users with sample activities and stats.
 """
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
 from database.models import User, UserStats, ActivityLog, VPNServer
@@ -117,40 +117,45 @@ def seed_database(db: Session):
             print(f"[SEED] Created demo user: {user_data['email']}")
     
     # ==================== SAMPLE STATS & ACTIVITIES ====================
-    actions = ["scan", "chat", "ssl_scan", "phishing_check", "vpn_generate", "login", "footprint", "hash_check"]
-    
-    all_users = user_repo.get_all()
-    for user in all_users:
-        # Add random stats
-        user_repo.update_stats(user.id, {
-            "total_scans": random.randint(5, 50),
-            "phishing_checks": random.randint(2, 20),
-            "security_scans": random.randint(1, 15),
-            "vpn_configs": random.randint(0, 5),
-            "reports_generated": random.randint(1, 10),
-            "file_analysis": random.randint(0, 10),
-            "malware_detected": random.randint(0, 3),
-            "last_active": datetime.utcnow(),
-        })
+    # Only seed if no activities exist (prevents duplicates on restart)
+    existing_activities = db.query(ActivityLog).limit(1).first()
+    if not existing_activities:
+        actions = ["scan", "chat", "ssl_scan", "phishing_check", "vpn_generate", "login", "footprint", "hash_check"]
         
-        # Add random activities
-        for _ in range(random.randint(3, 10)):
-            action = random.choice(actions)
-            activity_time = datetime.utcnow() - timedelta(
-                hours=random.randint(0, 72),
-                minutes=random.randint(0, 59)
-            )
-            
-            activity_repo.create({
-                "user_id": user.id,
-                "action": action,
-                "details": {"target": f"example-{random.randint(1, 100)}.com"},
-                "ip_address": f"192.168.1.{random.randint(1, 254)}",
-                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                "timestamp": activity_time,
+        all_users = user_repo.get_all()
+        for user in all_users:
+            # Add random stats
+            user_repo.update_stats(user.id, {
+                "total_scans": random.randint(5, 50),
+                "phishing_checks": random.randint(2, 20),
+                "security_scans": random.randint(1, 15),
+                "vpn_configs": random.randint(0, 5),
+                "reports_generated": random.randint(1, 10),
+                "file_analysis": random.randint(0, 10),
+                "malware_detected": random.randint(0, 3),
+                "last_active": datetime.now(timezone.utc),
             })
-    
-    print(f"[SEED] Added stats and activities for {len(all_users)} users")
+            
+            # Add random activities
+            for _ in range(random.randint(3, 10)):
+                action = random.choice(actions)
+                activity_time = datetime.now(timezone.utc) - timedelta(
+                    hours=random.randint(0, 72),
+                    minutes=random.randint(0, 59)
+                )
+                
+                activity_repo.create({
+                    "user_id": user.id,
+                    "action": action,
+                    "details": {"target": f"example-{random.randint(1, 100)}.com"},
+                    "ip_address": f"192.168.1.{random.randint(1, 254)}",
+                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                    "timestamp": activity_time,
+                })
+        
+        print(f"[SEED] Added stats and activities for {len(all_users)} users")
+    else:
+        print("[SEED] Skipping stats/activities (already exist)")
     
     # ==================== VPN SERVERS ====================
     vpn_servers = [

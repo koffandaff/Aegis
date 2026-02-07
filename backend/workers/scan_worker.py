@@ -5,7 +5,7 @@ import asyncio
 import time
 import json
 from typing import Dict, Any, Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 
 from model.Auth_Model import db
 from utils.network_tools import network_tools
@@ -28,7 +28,7 @@ class ScanWorker:
             # Update scan status
             self.db.update_scan(scan_id, {
                 'status': 'running',
-                'started_at': datetime.utcnow().isoformat()
+                'started_at': datetime.now(timezone.utc).isoformat()
             })
             
             # Perform scan based on type
@@ -96,7 +96,7 @@ class ScanWorker:
             self.db.update_scan(scan_id, {
                 'status': 'completed',
                 'results': results,
-                'completed_at': datetime.utcnow().isoformat(),
+                'completed_at': datetime.now(timezone.utc).isoformat(),
                 'duration_ms': duration_ms
             })
             
@@ -112,7 +112,7 @@ class ScanWorker:
             self.db.update_scan(scan_id, {
                 'status': 'failed',
                 'error': str(e),
-                'completed_at': datetime.utcnow().isoformat(),
+                'completed_at': datetime.now(timezone.utc).isoformat(),
                 'duration_ms': duration_ms
             })
             
@@ -148,7 +148,7 @@ class ScanWorker:
             'completed': 0,
             'failed': 0,
             'results': [],
-            'start_time': datetime.utcnow().isoformat()
+            'start_time': datetime.now(timezone.utc).isoformat()
         }
         
         # Process tasks concurrently
@@ -185,7 +185,7 @@ class ScanWorker:
                     'results': result
                 })
         
-        results['end_time'] = datetime.utcnow().isoformat()
+        results['end_time'] = datetime.now(timezone.utc).isoformat()
         results['success_rate'] = results['completed'] / results['total'] if results['total'] > 0 else 0
         
         return results
@@ -197,7 +197,7 @@ class ScanWorker:
             'active_scans': len(self.active_scans),
             'memory_usage': 'N/A',  # Would use psutil in production
             'uptime': 'N/A',  # Would track in production
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }
     
     def cleanup_old_scans(self, hours: int = 24):

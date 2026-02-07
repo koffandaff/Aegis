@@ -66,10 +66,13 @@ class PhishingView {
                             </div>
                         </div>
 
-                        <!-- Raw JSON Tab -->
-                        <div style="margin-top: 1rem;">
+                        <!-- Export Controls -->
+                        <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button onclick="downloadPhishingPDF()" class="btn" style="font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">picture_as_pdf</span> EXPORT PDF
+                            </button>
                             <button onclick="toggleRawJSON()" class="btn-outline" style="font-size: 0.8rem;">Toggle Raw JSON</button>
-                            <pre id="json-output" class="json-box" style="display: none; margin-top: 0.5rem;"></pre>
+                            <pre id="json-output" class="json-box" style="display: none; margin-top: 0.5rem; width: 100%;"></pre>
                         </div>
                     </div>
                 </div>
@@ -86,6 +89,83 @@ class PhishingView {
 
         window.toggleRawJSON = function () {
             jsonOutput.style.display = jsonOutput.style.display === 'none' ? 'block' : 'none';
+        };
+
+        window.downloadPhishingPDF = async function () {
+            Utils.showToast('Compiling Phishing Report...', 'info');
+            const { jsPDF } = window.jspdf;
+            const element = document.getElementById('phishing-report');
+
+            try {
+                const canvas = await html2canvas(element, {
+                    backgroundColor: '#0a0a0b',
+                    scale: 2,
+                    useCORS: true,
+                    scrollY: -window.scrollY,
+                    windowHeight: element.scrollHeight,
+                    height: element.scrollHeight
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const margin = 10;
+                const contentWidth = pageWidth - (margin * 2);
+                const contentHeight = pageHeight - (margin * 2) - 10;
+
+                const imgWidth = contentWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                // Calculate how many pages we need
+                const totalPDFPages = Math.ceil(imgHeight / contentHeight);
+
+                for (let page = 0; page < totalPDFPages; page++) {
+                    if (page > 0) pdf.addPage();
+
+                    // Fill background
+                    pdf.setFillColor(10, 10, 11);
+                    pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+                    // Calculate the portion of the image to show on this page
+                    const sourceY = page * (canvas.height / totalPDFPages);
+                    const sourceHeight = canvas.height / totalPDFPages;
+
+                    // Create a temporary canvas for this page's portion
+                    const pageCanvas = document.createElement('canvas');
+                    pageCanvas.width = canvas.width;
+                    pageCanvas.height = sourceHeight;
+                    const ctx = pageCanvas.getContext('2d');
+
+                    // Draw the portion of the original canvas
+                    ctx.drawImage(
+                        canvas,
+                        0, sourceY,
+                        canvas.width, sourceHeight,
+                        0, 0,
+                        canvas.width, sourceHeight
+                    );
+
+                    // Add this page's image portion
+                    const pageImgData = pageCanvas.toDataURL('image/png');
+                    pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, contentHeight);
+                }
+
+                // Page numbers
+                const totalPages = pdf.internal.getNumberOfPages();
+                for (let i = 1; i <= totalPages; i++) {
+                    pdf.setPage(i);
+                    pdf.setFontSize(8);
+                    pdf.setTextColor(100, 100, 100);
+                    pdf.text(`Page ${i} of ${totalPages} | Fsociety Phishing Analysis`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+                }
+
+                pdf.save(`fsociety_phishing_report_${Date.now()}.pdf`);
+                Utils.showToast('Report Exported Successfully', 'success');
+            } catch (e) {
+                console.error('PDF Export Error:', e);
+                Utils.showToast('PDF Export Error: ' + e.message, 'error');
+            }
         };
 
         form.addEventListener('submit', async (e) => {

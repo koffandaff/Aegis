@@ -8,7 +8,7 @@ import re
 import time
 import warnings
 from typing import Dict, List, Optional, Tuple, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 import httpx
 from cryptography import x509
@@ -45,7 +45,7 @@ class SecurityTools:
         results = {
             'domain': domain,
             'port': port,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'certificate': {},
             'tls_versions': [],
             'cipher_suites': [],
@@ -389,7 +389,7 @@ class SecurityTools:
         start_time = time.time()
         results = {
             'url': url,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'status_code': None,
             'server': None,
             'content_type': None,
@@ -666,7 +666,7 @@ class SecurityTools:
         start_time = time.time()
         results = {
             'domain': domain,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'technologies': [],
             'categories': {},
             'confidence_score': 0.0
@@ -716,7 +716,7 @@ class SecurityTools:
         start_time = time.time()
         results = {
             'url': url,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'overall_score': 0.0,
             'security_headers_score': 0.0,
             'cookie_security_score': 0.0,

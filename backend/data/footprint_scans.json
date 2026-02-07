@@ -431,6 +431,71 @@
       "started_at": "2026-01-28 11:01:56.229486",
       "completed_at": "2026-01-28T11:01:57.245111",
       "error_message": null
+    },
+    {
+      "id": "b2933b17-c44d-48d2-9d4b-9d7262884768",
+      "user_id": "9f66fd55-31a9-4b7c-88b8-40057e33eb1a",
+      "email_scanned": "dhruvillearning@gmail.com",
+      "username_scanned": "koffandaff",
+      "phone_scanned": null,
+      "platforms_checked": [
+        "instagram",
+        "facebook"
+      ],
+      "score": 71,
+      "findings": [
+        {
+          "id": "346a0ef2",
+          "category": "email_exposure",
+          "source": "Facebook",
+          "severity": "medium",
+          "title": "Email registered on Facebook",
+          "description": "Your email address appears to be registered on Facebook.",
+          "url": null,
+          "found_at": "2026-02-03 05:24:34.698497"
+        },
+        {
+          "id": "38c9c7f9",
+          "category": "email_exposure",
+          "source": "LinkedIn",
+          "severity": "low",
+          "title": "Email registered on LinkedIn",
+          "description": "Your email address appears to be registered on LinkedIn.",
+          "url": null,
+          "found_at": "2026-02-03 05:24:34.698689"
+        },
+        {
+          "id": "3a364406",
+          "category": "email_exposure",
+          "source": "GitHub",
+          "severity": "low",
+          "title": "Email registered on GitHub",
+          "description": "Your email address appears to be registered on GitHub.",
+          "url": null,
+          "found_at": "2026-02-03 05:24:34.698728"
+        },
+        {
+          "id": "fdcc8481",
+          "category": "email_exposure",
+          "source": "Pinterest",
+          "severity": "low",
+          "title": "Email registered on Pinterest",
+          "description": "Your email address appears to be registered on Pinterest.",
+          "url": null,
+          "found_at": "2026-02-03 05:24:34.698765"
+        }
+      ],
+      "recommendations": [
+        "\ud83d\udd10 Use a password manager and create unique passwords for each account.",
+        "\u2705 Your digital footprint is relatively secure. Keep monitoring regularly.",
+        "\ud83d\udd0d Enable two-factor authentication on all important accounts.",
+        "\ud83d\uddd1\ufe0f Delete accounts you no longer use to reduce your attack surface."
+      ],
+      "status": "completed",
+      "progress": 100,
+      "started_at": "2026-02-03 05:24:33.483961",
+      "completed_at": "2026-02-03T05:24:34.881296",
+      "error_message": null
     }
   ]
 }

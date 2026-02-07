@@ -100,18 +100,21 @@ async def search_activities(
     action: str = Query(None),
     date_from: str = Query(None),
     date_to: str = Query(None),
+    page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
     admin: dict = Depends(require_admin),
     admin_service: AdminService = Depends(get_admin_service)
 ):
     """Search activities across all users"""
     try:
+        skip = (page - 1) * limit
         activities = admin_service.search_activities(
             user_id=user_id,
             action=action,
             date_from=date_from,
             date_to=date_to,
-            limit=limit
+            limit=limit,
+            skip=skip
         )
         return {"activities": activities, "count": len(activities)}
     except Exception as e:

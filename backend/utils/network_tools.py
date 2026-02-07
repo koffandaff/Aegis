@@ -9,7 +9,7 @@ import time
 import subprocess
 import json
 from typing import Dict, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 
 class NetworkTools:
     def __init__(self):
@@ -214,7 +214,7 @@ class NetworkTools:
                 'hostname': hostname,
                 'geolocation': geo_info,
                 'service': service,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -357,7 +357,7 @@ class NetworkTools:
         """Perform comprehensive domain scan"""
         results = {
             'domain': domain,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'scan_type': 'full'
         }
         

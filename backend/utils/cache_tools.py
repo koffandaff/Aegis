@@ -5,7 +5,7 @@ import time
 import json
 import hashlib
 from typing import Dict, Any, Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from collections import OrderedDict
 
 from config.settings import settings
@@ -69,7 +69,7 @@ class CacheTools:
         entry = {
             'value': value,
             'timestamp': time.time(),
-            'created_at': datetime.utcnow().isoformat()
+            'created_at': datetime.now(timezone.utc).isoformat()
         }
         
         self.cache[key] = entry

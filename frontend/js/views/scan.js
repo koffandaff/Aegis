@@ -406,34 +406,87 @@ window.downloadPDF = async function () {
     const { jsPDF } = window.jspdf;
     const element = document.getElementById('professional-report');
 
-    // Preparation for PDF: Expand everything, hide non-print
+    // Preparation for PDF: Expand everything, hide non-print elements
     const allItems = document.querySelectorAll('.accordion-item');
     allItems.forEach(i => i.classList.add('active'));
-    document.querySelector('.tabs').style.display = 'none';
+    const tabs = document.querySelector('.tabs');
+    if (tabs) tabs.style.display = 'none';
 
     try {
+        // Capture at higher resolution with scrolling support
         const canvas = await html2canvas(element, {
             backgroundColor: '#0a0a0b',
             scale: 2,
             logging: false,
-            useCORS: true
+            useCORS: true,
+            scrollY: -window.scrollY,
+            windowHeight: element.scrollHeight,
+            height: element.scrollHeight
         });
 
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        const contentWidth = pageWidth - (margin * 2);
+        const contentHeight = pageHeight - (margin * 2) - 10; // 10mm for footer
 
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        // Calculate the image dimensions in PDF units
+        const imgWidth = contentWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // Calculate how many pages we need
+        const totalPDFPages = Math.ceil(imgHeight / contentHeight);
+
+        for (let page = 0; page < totalPDFPages; page++) {
+            if (page > 0) pdf.addPage();
+
+            // Fill background
+            pdf.setFillColor(10, 10, 11);
+            pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+            // Calculate the portion of the image to show on this page
+            const sourceY = page * (canvas.height / totalPDFPages);
+            const sourceHeight = canvas.height / totalPDFPages;
+
+            // Create a temporary canvas for this page's portion
+            const pageCanvas = document.createElement('canvas');
+            pageCanvas.width = canvas.width;
+            pageCanvas.height = sourceHeight;
+            const ctx = pageCanvas.getContext('2d');
+
+            // Draw the portion of the original canvas
+            ctx.drawImage(
+                canvas,
+                0, sourceY,           // Source x, y
+                canvas.width, sourceHeight,  // Source width, height
+                0, 0,                 // Dest x, y
+                canvas.width, sourceHeight   // Dest width, height
+            );
+
+            // Add this page's image portion
+            const pageImgData = pageCanvas.toDataURL('image/png');
+            pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, contentHeight);
+        }
+
+        // Add page numbers
+        const totalPages = pdf.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            pdf.setPage(i);
+            pdf.setFontSize(8);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text(`Page ${i} of ${totalPages} | Fsociety Intelligence Report`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+        }
+
         pdf.save(`fsociety_intel_report_${new Date().getTime()}.pdf`);
-        Utils.showToast('Report Exported', 'success');
+        Utils.showToast('Report Exported Successfully', 'success');
     } catch (error) {
-        Utils.showToast('PDF Export Error', 'error');
+        console.error('PDF Export Error:', error);
+        Utils.showToast('PDF Export Error: ' + error.message, 'error');
     } finally {
-        // Restore
-        document.querySelector('.tabs').style.display = 'flex';
-        // (Optionally collapse them back, but usually user wants them open for now)
+        // Restore tabs visibility
+        if (tabs) tabs.style.display = 'flex';
     }
 };
 

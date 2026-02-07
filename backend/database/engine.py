@@ -16,7 +16,11 @@ from contextlib import contextmanager
 
 # Database URL - easily swappable via environment variable
 # Default to SQLite for development
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/fsociety.db")
+_raw_database_url = os.getenv("DATABASE_URL", "sqlite:///./data/fsociety.db")
+
+# SQLAlchemy 1.4+ requires 'postgresql://' instead of 'postgres://'
+# Many cloud providers (Heroku, Aiven) still use 'postgres://' in their URLs
+DATABASE_URL = _raw_database_url.replace("postgres://", "postgresql://", 1) if _raw_database_url.startswith("postgres://") else _raw_database_url
 
 # Create engine with appropriate settings based on database type
 if DATABASE_URL.startswith("sqlite"):

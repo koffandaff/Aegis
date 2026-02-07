@@ -5,13 +5,17 @@ Defines all database tables based on the schema documentation.
 These models map directly to SQL tables.
 """
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import (
     Column, String, Text, Boolean, Integer, Float,
     ForeignKey, DateTime, JSON, Enum as SQLEnum
 )
 from sqlalchemy.orm import relationship
 from database.engine import Base
+
+def get_utc_now():
+    """Get current UTC time with timezone info"""
+    return datetime.now(timezone.utc)
 
 
 def generate_uuid():
@@ -45,8 +49,8 @@ class User(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now, nullable=False)
+    updated_at = Column(DateTime, default=get_utc_now, onupdate=get_utc_now)
     last_login_at = Column(DateTime, nullable=True)
     last_login_ip = Column(String(45), nullable=True)  # IPv6 compatible
     password_changed_at = Column(DateTime, nullable=True)
@@ -127,7 +131,7 @@ class ActivityLog(Base):
     details = Column(JSON, nullable=True)
     ip_address = Column(String(45), nullable=True)
     user_agent = Column(Text, nullable=True)
-    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = Column(DateTime, default=get_utc_now, nullable=False, index=True)
     
     # Relationship
     user = relationship("User", back_populates="activities")
@@ -161,7 +165,7 @@ class NetworkScan(Base):
     results = Column(JSON, nullable=True)
     error = Column(Text, nullable=True)
     
-    started_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime, default=get_utc_now)
     completed_at = Column(DateTime, nullable=True)
     duration_ms = Column(Integer, nullable=True)
     
@@ -198,7 +202,7 @@ class SecurityScan(Base):
     risk_level = Column(String(20), nullable=True)
     results = Column(JSON, nullable=True)
     
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
     
     # Relationship
     user = relationship("User", back_populates="security_scans")
@@ -214,8 +218,8 @@ class ChatSession(Base):
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     
     title = Column(String(100), default="New Chat")
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
+    updated_at = Column(DateTime, default=get_utc_now, onupdate=get_utc_now)
     
     # Relationships
     user = relationship("User", back_populates="chat_sessions")
@@ -233,7 +237,7 @@ class ChatMessage(Base):
     
     role = Column(String(20), nullable=False)  # user, assistant
     content = Column(Text, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=get_utc_now)
     
     # Relationship
     session = relationship("ChatSession", back_populates="messages")
@@ -259,7 +263,7 @@ class FootprintScan(Base):
     recommendations = Column(JSON, nullable=True)
     error_message = Column(Text, nullable=True)
     
-    started_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime, default=get_utc_now)
     completed_at = Column(DateTime, nullable=True)
     
     # Relationships
@@ -282,7 +286,7 @@ class FootprintFinding(Base):
     title = Column(String(255), nullable=True)
     description = Column(Text, nullable=True)
     url = Column(Text, nullable=True)
-    found_at = Column(DateTime, default=datetime.utcnow)
+    found_at = Column(DateTime, default=get_utc_now)
     
     # Relationship
     scan = relationship("FootprintScan", back_populates="findings")
@@ -318,7 +322,7 @@ class VPNConfig(Base):
     config_type = Column(String(20), default="openvpn")
     filename = Column(String(255), nullable=True)
     config_content = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
     
     # Relationships
     user = relationship("User", back_populates="vpn_configs")
@@ -340,7 +344,7 @@ class MalwareScan(Base):
     is_malicious = Column(Boolean, nullable=True)
     results = Column(JSON, nullable=True)
     
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
     
     # Relationship
     user = relationship("User", back_populates="malware_scans")
@@ -358,7 +362,7 @@ class Report(Base):
     title = Column(String(255), nullable=True)
     report_type = Column(String(50), nullable=True)
     file_path = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
     
     # Relationship
     user = relationship("User", back_populates="reports")
@@ -375,7 +379,7 @@ class PasswordResetToken(Base):
     
     token_hash = Column(String(255), nullable=False, index=True)
     expires_at = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
     
     # Relationship
     user = relationship("User")

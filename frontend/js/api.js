@@ -1,7 +1,10 @@
 // Dynamic API URL for remote access
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+// Priority: 1. localStorage override 2. window.APP_CONFIG 3. auto-detect
+const storedApiUrl = localStorage.getItem('api_url');
+const configApiUrl = window.APP_CONFIG?.API_URL;
+const API_URL = storedApiUrl || configApiUrl || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:8000/api'
-    : `http://${window.location.hostname}:8000/api`;
+    : `${window.location.protocol}//${window.location.hostname}:8000/api`);
 
 
 class Api {
@@ -19,7 +22,8 @@ class Api {
 
         const config = {
             method,
-            headers
+            headers,
+            credentials: 'include'
         };
 
         if (body) {
@@ -31,12 +35,47 @@ class Api {
 
             // Handle Unauthorized (Token Expired)
             if (response.status === 401) {
-                // Try refresh logic here (simplified for now: logout)
-                if (!endpoint.includes('login')) {
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
-                    localStorage.removeItem('user');
-                    window.location.hash = '/login';
+                // Prevent infinite loops: if refresh or login fails, logout immediately
+                if (endpoint.includes('/auth/refresh') || endpoint.includes('/auth/login')) {
+                    this.handleLogout();
+                    return null;
+                }
+
+                try {
+                    console.log('Token expired. Attempting refresh...');
+                    // Attempt to refresh token
+                    // We use fetch directly here to avoid circular dependency on this interceptor, 
+                    // though recursion protection above handles it too. 
+                    // But using this.post('/auth/refresh') is cleaner.
+
+                    const refreshResponse = await this.post('/auth/refresh');
+
+                    if (refreshResponse && refreshResponse.access_token) {
+                        console.log('Token refresh successful');
+                        localStorage.setItem('access_token', refreshResponse.access_token);
+
+                        // Update authorization header with new token
+                        const newHeaders = { ...headers };
+                        newHeaders['Authorization'] = `Bearer ${refreshResponse.access_token}`;
+
+                        // Retry original request with new config
+                        const retryConfig = { ...config, headers: newHeaders };
+                        const retryResponse = await fetch(`${API_URL}${endpoint}`, retryConfig);
+
+                        if (retryResponse.status === 401) {
+                            this.handleLogout();
+                            return null;
+                        }
+
+                        return await retryResponse.json();
+                    } else {
+                        console.warn('Refresh failed: No token returned');
+                        this.handleLogout();
+                        return null;
+                    }
+                } catch (e) {
+                    console.error('Session expired or refresh failed:', e);
+                    this.handleLogout();
                     return null;
                 }
             }
@@ -47,6 +86,13 @@ class Api {
             if (response.status === 403 && data.detail?.code === 'ACCOUNT_DISABLED') {
                 this.showDisabledModal(data.detail.message);
                 return null;
+            }
+
+            // Handle Rate Limiting (429)
+            if (response.status === 429) {
+                const message = data.detail?.message || 'Too many requests. Please wait and try again.';
+                this.showRateLimitToast(message);
+                throw new Error(message);
             }
 
             if (!response.ok) {
@@ -107,6 +153,35 @@ class Api {
         });
     }
 
+    static showRateLimitToast(message) {
+        // Remove existing rate limit toast if any
+        const existingToast = document.getElementById('rate-limit-toast');
+        if (existingToast) existingToast.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'rate-limit-toast';
+        toast.innerHTML = `
+            <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10001; 
+                        background: linear-gradient(135deg, #ff4757, #c0392b); color: white; 
+                        padding: 1rem 2rem; border-radius: 12px; box-shadow: 0 8px 32px rgba(255,71,87,0.4);
+                        display: flex; align-items: center; gap: 1rem; animation: slideDown 0.3s ease;">
+                <span class="material-symbols-outlined" style="font-size: 1.5rem;">speed</span>
+                <div>
+                    <div style="font-weight: bold; margin-bottom: 0.25rem;">Rate Limit Exceeded</div>
+                    <div style="font-size: 0.85rem; opacity: 0.9;">${message}</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s';
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
+    }
+
     static get(endpoint) {
         return this.request(endpoint, 'GET');
     }
@@ -121,6 +196,14 @@ class Api {
 
     static delete(endpoint) {
         return this.request(endpoint, 'DELETE');
+    }
+
+    static handleLogout() {
+        console.log('Logging out due to session expiration');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        window.location.hash = '/login';
     }
 }
 

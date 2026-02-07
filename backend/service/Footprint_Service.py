@@ -6,7 +6,7 @@ import asyncio
 import subprocess
 import json
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from model.Footprint_Model import (
@@ -82,7 +82,7 @@ class FootprintService:
                 "score": score,
                 "findings": [f.dict() for f in findings],
                 "recommendations": recommendations,
-                "completed_at": datetime.utcnow().isoformat()
+                "completed_at": datetime.now(timezone.utc).isoformat()
             })
             
             # Log footprint activity
@@ -97,7 +97,7 @@ class FootprintService:
             self.db.update_scan(scan_id, user_id, {
                 "status": "failed",
                 "error_message": str(e),
-                "completed_at": datetime.utcnow().isoformat()
+                "completed_at": datetime.now(timezone.utc).isoformat()
             })
     
     async def _check_email_exposure(self, email: str) -> List[FindingItem]:

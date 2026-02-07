@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, validator
 from typing import Optional, Dict, List
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 # Role Enum
@@ -134,7 +134,7 @@ class TempDb:
 
         user_id = str(uuid.uuid4())
         user_data['id'] = user_id
-        user_data['created_at'] = datetime.utcnow().isoformat()
+        user_data['created_at'] = datetime.now(timezone.utc).isoformat()
         user_data['is_active'] = True
         # Ensure role is saved
         if 'role' not in user_data:
@@ -189,7 +189,7 @@ class TempDb:
             'details': details or {},
             'ip_address': ip_address,
             'user_agent': user_agent,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }
         
         if user_id not in self.user_activities:
@@ -260,7 +260,7 @@ class TempDb:
             'status': 'pending',
             'results': None,
             'error': None,
-            'started_at': datetime.utcnow().isoformat(),
+            'started_at': datetime.now(timezone.utc).isoformat(),
             'completed_at': None,
             'duration_ms': None
         }

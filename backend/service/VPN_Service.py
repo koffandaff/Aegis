@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 import os
 from typing import List, Optional, Dict
@@ -117,7 +117,7 @@ class VPNService:
             name=server_name,
             filename=config_filename,
             config_content=config_content,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
         
         # Store in DB
@@ -146,7 +146,7 @@ class VPNService:
         Build a complete OpenVPN configuration file with embedded certificates.
         """
         config = f"""# Fsociety VPN - OpenVPN Client Configuration
-# Generated: {datetime.utcnow().isoformat()}
+# Generated: {datetime.now(timezone.utc).isoformat()}
 # This is a REAL configuration with valid certificates
 
 client
@@ -242,7 +242,7 @@ mute 20
             type="wireguard",
             name=f"WG-{request.server_endpoint}",
             config_content=config_content,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
         
         # Store in DB

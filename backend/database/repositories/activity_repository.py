@@ -3,7 +3,7 @@ Activity Repository - Database operations for activity logs
 
 Handles all activity logging and retrieval operations.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
@@ -30,7 +30,7 @@ class ActivityRepository(BaseRepository[ActivityLog]):
             details=data.get("details"),
             ip_address=data.get("ip_address"),
             user_agent=data.get("user_agent"),
-            timestamp=data.get("timestamp", datetime.utcnow()),
+            timestamp=data.get("timestamp", datetime.now(timezone.utc)),
         )
         self.db.add(activity)
         self.db.commit()

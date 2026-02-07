@@ -5,7 +5,7 @@ Pydantic models for OSINT-based digital footprint analysis
 import json
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field, EmailStr
 from enum import Enum
@@ -50,7 +50,7 @@ class FindingItem(BaseModel):
     title: str
     description: str
     url: Optional[str] = None
-    found_at: datetime = Field(default_factory=datetime.utcnow)
+    found_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class FootprintScanResult(BaseModel):
@@ -70,7 +70,7 @@ class FootprintScanResult(BaseModel):
     # Metadata
     status: str = "pending"  # pending, running, completed, failed
     progress: int = 0  # 0-100
-    started_at: datetime = Field(default_factory=datetime.utcnow)
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
     error_message: Optional[str] = None
 
@@ -168,7 +168,7 @@ class FootprintDatabase:
                 score=s.get("score", 0),
                 findings_count=len(s.get("findings", [])),
                 status=s.get("status", "unknown"),
-                started_at=s.get("started_at", datetime.utcnow()),
+                started_at=s.get("started_at", datetime.now(timezone.utc)),
                 completed_at=s.get("completed_at")
             )
             for s in user_scans

@@ -2,7 +2,7 @@
 File analysis service for hash checking, malware detection, etc.
 """
 from typing import Dict, Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import time
 import httpx
 from sqlalchemy.orm import Session
@@ -114,7 +114,7 @@ class FileService:
         if all_cached and batch_results:
             # All results were cached
             return {
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'total_hashes': len(request.hashes),
                 'malicious_count': sum(1 for r in batch_results if r['reputation']['known_malicious']),
                 'clean_count': sum(1 for r in batch_results if r['reputation']['known_clean']),
@@ -336,7 +336,7 @@ class FileService:
                     
                     return {
                         'hash': hash_str,
-                        'timestamp': datetime.utcnow().isoformat(),
+                        'timestamp': datetime.now(timezone.utc).isoformat(),
                         'permalink': f"https://www.virustotal.com/gui/file/{hash_str}",
                         'positives': attributes.get('last_analysis_stats', {}).get('malicious', 0),
                         'total': sum(attributes.get('last_analysis_stats', {}).values()),
@@ -353,7 +353,7 @@ class FileService:
                 elif response.status_code == 404:
                     return {
                         'hash': hash_str,
-                        'timestamp': datetime.utcnow().isoformat(),
+                        'timestamp': datetime.now(timezone.utc).isoformat(),
                         'note': 'Hash not found in VirusTotal database',
                         'positives': 0,
                         'total': 0
@@ -441,7 +441,7 @@ class FileService:
             
             # Save updated database
             existing_data['hashes'] = list(hash_dict.values())
-            existing_data['updated_at'] = datetime.utcnow().isoformat()
+            existing_data['updated_at'] = datetime.now(timezone.utc).isoformat()
             existing_data['total_entries'] = len(existing_data['hashes'])
             
             os.makedirs(os.path.dirname(db_path), exist_ok=True)

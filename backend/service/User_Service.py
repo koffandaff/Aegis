@@ -5,7 +5,7 @@ Handles user profile management, password changes, and activity logging.
 Uses SQLAlchemy repositories instead of TempDb.
 """
 from typing import Optional, Dict, List
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import Request
 from sqlalchemy.orm import Session
 
@@ -66,7 +66,7 @@ class UserService:
         
         self.user_repo.update(user_id, {
             'password_hash': new_hashed_password,
-            'password_changed_at': datetime.utcnow()
+            'password_changed_at': datetime.now(timezone.utc)
         })
         
         # Log activity
@@ -159,7 +159,7 @@ class UserService:
             user_agent = request.headers.get('user-agent')
         
         # Update last active
-        self.user_repo.update_stats(user_id, {'last_active': datetime.utcnow()})
+        self.user_repo.update_stats(user_id, {'last_active': datetime.now(timezone.utc)})
         
         # Log the activity
         return self.activity_repo.log_activity(

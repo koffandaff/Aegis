@@ -69,6 +69,7 @@ async def get_session(
         "title": session.title,
         "messages": [
             {
+                "id": m.id,  # Include ID
                 "role": m.role,
                 "content": m.content,
                 "timestamp": m.timestamp.isoformat() if hasattr(m.timestamp, 'isoformat') else str(m.timestamp)
@@ -148,6 +149,44 @@ async def send_message(
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no"  # Disable nginx buffering
+        }
+    )
+
+
+class EditMessageRequest(BaseModel):
+    new_content: str
+
+
+@router.put("/sessions/{session_id}/messages/{message_id}")
+async def edit_message(
+    session_id: str,
+    message_id: str,
+    request: EditMessageRequest,
+    current_user: dict = Depends(get_current_user),
+    chat_service: ChatService = Depends(get_chat_service)
+):
+    """
+    Edit a message and regenerate response via SSE.
+    """
+    username = current_user.get("username", "User")
+    
+    async def event_generator():
+        async for chunk in chat_service.edit_message_stream(
+            user_id=current_user["id"],
+            session_id=session_id,
+            message_id=message_id,
+            new_content=request.new_content,
+            username=username
+        ):
+            yield f"data: {chunk}\n\n"
+    
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
         }
     )
 

@@ -49,7 +49,13 @@ async def log_requests(request: Request, call_next):
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],  # In production, replace with specific origins
+    allow_origins=[
+        'https://supercommercial-cataclysmic-cayla.ngrok-free.dev',
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000"
+    ],
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
@@ -143,7 +149,8 @@ async def status_check():
     try:
         import httpx
         async with httpx.AsyncClient(timeout=2.0) as client:
-            response = await client.get("http://localhost:11434/api/tags")
+            ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
+            response = await client.get(f"{ollama_url}/api/tags")
             ai_available = response.status_code == 200
     except:
         ai_available = False
@@ -159,6 +166,6 @@ async def status_check():
             'security_scanning': 'active',
             'file_analysis': 'active',
             'ai_chat': 'active' if ai_available else 'unavailable',
-            'database': 'SQLite (active)'
+            'database': f"{os.getenv('DATABASE_URL', 'sqlite').split('://')[0].upper()} (active)"
         }
     }

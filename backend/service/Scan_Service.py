@@ -5,7 +5,7 @@ Handles network scanning with security features.
 Uses SQLAlchemy repositories instead of TempDb.
 """
 from typing import Dict, Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import time
 from sqlalchemy.orm import Session
 
@@ -86,7 +86,7 @@ class ScanService:
             # Update scan status
             self.scan_repo.update(scan_id, {
                 'status': 'running',
-                'started_at': datetime.utcnow()
+                'started_at': datetime.now(timezone.utc)
             })
             
             # Perform scan based on type
@@ -142,7 +142,7 @@ class ScanService:
             self.scan_repo.update(scan_id, {
                 'status': 'completed',
                 'results': results,
-                'completed_at': datetime.utcnow(),
+                'completed_at': datetime.now(timezone.utc),
                 'duration_ms': duration_ms
             })
             
@@ -165,7 +165,7 @@ class ScanService:
             self.scan_repo.update(scan_id, {
                 'status': 'failed',
                 'error': str(e),
-                'completed_at': datetime.utcnow(),
+                'completed_at': datetime.now(timezone.utc),
                 'duration_ms': duration_ms
             })
             

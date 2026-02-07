@@ -4,7 +4,7 @@ Authentication Service - SQLite Version
 Handles user authentication, JWT tokens, and session management.
 Uses SQLAlchemy repositories instead of TempDb.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
@@ -33,7 +33,7 @@ class AuthService:
         # Load environment variables
         self.secret_key = os.getenv('SECRET_KEY', 'fsocitey-backup-key-change-this')
         self.algorithm = os.getenv('ALGORITHM', 'HS256')
-        self.access_token_expire = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 15))
+        self.access_token_expire = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 2))
         self.refresh_token_expire = int(os.getenv('REFRESH_TOKEN_EXPIRE_DAYS', 7))
     
     def hash_password(self, password: str) -> str:
@@ -60,9 +60,9 @@ class AuthService:
         payload = payload_data.copy()
         
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire)
+            expire = datetime.now(timezone.utc) + timedelta(minutes=self.access_token_expire)
         
         payload.update({'exp': expire, 'type': 'access'})
         access_token = jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
@@ -71,7 +71,7 @@ class AuthService:
     def create_refresh_token(self, data: dict) -> str:
         """Create JWT refresh token"""
         payload = data.copy()
-        expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire)
+        expire = datetime.now(timezone.utc) + timedelta(days=self.refresh_token_expire)
         payload.update({'exp': expire, 'type': 'refresh'})
         refresh_token = jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
         return refresh_token
@@ -175,7 +175,7 @@ class AuthService:
         refresh_token = self.create_refresh_token(token_payload)
 
         # Save refresh token to database
-        expires_at = datetime.utcnow() + timedelta(days=self.refresh_token_expire)
+        expires_at = datetime.now(timezone.utc) + timedelta(days=self.refresh_token_expire)
         self.user_repo.save_refresh_token(user['id'], refresh_token, expires_at)
         
         # Update last login
@@ -206,6 +206,7 @@ class AuthService:
     
     def refresh_access_token(self, refresh_token: str) -> Optional[str]:
         """Refresh access token using refresh token"""
+        print(refresh_token)
         payload = self.verify_token(refresh_token, 'refresh')
         if not payload:
             return None
@@ -244,6 +245,11 @@ class AuthService:
                 action='logout',
                 details={}
             )
+
+    def record_login_ip(self, user_id: str, ip_address: str):
+        """Record user's login IP address"""
+        if ip_address:
+            self.user_repo.update_last_login(user_id, ip_address)
 
     def get_current_user(self, token: str) -> Optional[dict]:
         """Get current user from token"""
@@ -299,7 +305,7 @@ class AuthService:
         token_hash = hashlib.sha256(otp.encode()).hexdigest()
         
         # OTP expires in 10 minutes
-        expires_at = datetime.utcnow() + timedelta(minutes=10)
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
         
         self.user_repo.create_reset_token(user.id, token_hash, expires_at)
         
@@ -327,7 +333,7 @@ class AuthService:
         if input_hash != token_data['token_hash']:
             raise ValueError("Invalid OTP")
             
-        if token_data['expires_at'] < datetime.utcnow():
+        if token_data['expires_at'] < datetime.now(timezone.utc):
             raise ValueError("OTP has expired")
 
     def reset_password(self, email: str, otp: str, new_password: str) -> None:
@@ -352,7 +358,7 @@ class AuthService:
             raise ValueError("Invalid OTP")
 
         # 4. Check Expiry
-        if token_data['expires_at'] < datetime.utcnow():
+        if token_data['expires_at'] < datetime.now(timezone.utc):
             self.user_repo.delete_reset_token(token_data['token_hash'])
             raise ValueError("OTP has expired")
             
@@ -360,7 +366,7 @@ class AuthService:
         new_hash = self.hash_password(new_password)
         self.user_repo.update(user.id, {
             'password_hash': new_hash,
-            'password_changed_at': datetime.utcnow()
+            'password_changed_at': datetime.now(timezone.utc)
         })
         
         # Invalidate token
@@ -378,5 +384,5 @@ class AuthService:
         new_hash = self.hash_password(new_password)
         self.user_repo.update(user_id, {
             'password_hash': new_hash,
-            'password_changed_at': datetime.utcnow()
+            'password_changed_at': datetime.now(timezone.utc)
         })

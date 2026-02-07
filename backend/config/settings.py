@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
+    # Database
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./data/fsociety.db")
+    
+    # AI/Ollama
+    OLLAMA_URL: str = os.getenv("OLLAMA_URL", "http://localhost:11434")
+    
     # Scanning
     MAX_SCAN_TIMEOUT: int = 30  # seconds
     DEFAULT_RATE_LIMIT: int = 10  # requests per minute

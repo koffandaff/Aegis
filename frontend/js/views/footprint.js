@@ -484,26 +484,73 @@ class FootprintView {
         Utils.showToast('Generating PDF...', 'info');
 
         try {
+            // Capture full element with scrolling support
             const canvas = await html2canvas(reportEl, {
                 backgroundColor: '#0a0a0f',
-                scale: 2
+                scale: 2,
+                scrollY: -window.scrollY,
+                windowHeight: reportEl.scrollHeight,
+                height: reportEl.scrollHeight
             });
 
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin = 10;
+            const contentWidth = pageWidth - (margin * 2);
+            const contentHeight = pageHeight - (margin * 2) - 10;
 
-            const imgWidth = 190;
+            const imgWidth = contentWidth;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-            pdf.setFillColor(10, 10, 15);
-            pdf.rect(0, 0, 210, 297, 'F');
+            // Calculate how many pages we need
+            const totalPDFPages = Math.ceil(imgHeight / contentHeight);
 
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 10, imgWidth, imgHeight);
-            pdf.save('digital-footprint-report.pdf');
+            for (let page = 0; page < totalPDFPages; page++) {
+                if (page > 0) pdf.addPage();
 
-            Utils.showToast('PDF downloaded!', 'success');
+                // Fill background
+                pdf.setFillColor(10, 10, 15);
+                pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+                // Calculate the portion of the image to show on this page
+                const sourceY = page * (canvas.height / totalPDFPages);
+                const sourceHeight = canvas.height / totalPDFPages;
+
+                // Create a temporary canvas for this page's portion
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = canvas.width;
+                pageCanvas.height = sourceHeight;
+                const ctx = pageCanvas.getContext('2d');
+
+                // Draw the portion of the original canvas
+                ctx.drawImage(
+                    canvas,
+                    0, sourceY,
+                    canvas.width, sourceHeight,
+                    0, 0,
+                    canvas.width, sourceHeight
+                );
+
+                // Add this page's image portion
+                const pageImgData = pageCanvas.toDataURL('image/png');
+                pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, contentHeight);
+            }
+
+            // Page numbers
+            const totalPages = pdf.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                pdf.setPage(i);
+                pdf.setFontSize(8);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text(`Page ${i} of ${totalPages} | Fsociety Digital Footprint`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+            }
+
+            pdf.save(`digital-footprint-report_${Date.now()}.pdf`);
+            Utils.showToast('PDF downloaded successfully!', 'success');
         } catch (error) {
-            Utils.showToast('Failed to generate PDF', 'error');
+            Utils.showToast('Failed to generate PDF: ' + error.message, 'error');
             console.error(error);
         }
     }

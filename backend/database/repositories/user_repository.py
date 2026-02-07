@@ -6,7 +6,7 @@ Handles all user-related database operations including:
 - Authentication (password, tokens)
 - User statistics
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -105,7 +105,7 @@ class UserRepository(BaseRepository[User]):
             if hasattr(user, key) and key not in ["id", "created_at"]:
                 setattr(user, key, value)
         
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(timezone.utc)
         self.db.commit()
         self.db.refresh(user)
         return user
@@ -155,7 +155,7 @@ class UserRepository(BaseRepository[User]):
         if not user:
             return False
         
-        user.last_login_at = datetime.utcnow()
+        user.last_login_at = datetime.now(timezone.utc)
         if ip_address:
             user.last_login_ip = ip_address
         self.db.commit()
