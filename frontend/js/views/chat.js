@@ -502,101 +502,100 @@ class ChatView {
                     }
                 }
             }
+        } catch (err) {
+            console.error("Stream Processing Error:", err);
+            Utils.showToast("Stream Error: " + err.message, "error");
+            throw err;
+        } finally {
+            // CRITICAL: Reload session to sync message IDs (temp ID -> real ID)
+            await this.loadSessions(); // Updates sidebar
+            if (this.currentSessionId) {
+                await this.loadSession(this.currentSessionId); // Updates messages with real IDs
+            }
         }
-        } catch(err) {
-        console.error("Stream Processing Error:", err);
-        Utils.showToast("Stream Error: " + err.message, "error");
-        throw err;
-    } finally {
-        // CRITICAL: Reload session to sync message IDs (temp ID -> real ID)
-        await this.loadSessions(); // Updates sidebar
-        if (this.currentSessionId) {
-            await this.loadSession(this.currentSessionId); // Updates messages with real IDs
+    }
+
+    cleanupStreamingState() {
+        this.isStreaming = false;
+        this.abortController = null;
+        const sendBtn = document.getElementById('send-btn');
+        if (sendBtn) {
+            sendBtn.style.display = 'block';
+            sendBtn.disabled = false;
         }
-    }
-    }
+        const stopBtn = document.getElementById('stop-btn');
+        if (stopBtn) {
+            stopBtn.style.display = 'none';
+        }
 
-cleanupStreamingState() {
-    this.isStreaming = false;
-    this.abortController = null;
-    const sendBtn = document.getElementById('send-btn');
-    if (sendBtn) {
-        sendBtn.style.display = 'block';
-        sendBtn.disabled = false;
-    }
-    const stopBtn = document.getElementById('stop-btn');
-    if (stopBtn) {
-        stopBtn.style.display = 'none';
+        // Re-attach listeners to new elements
+        this.attachMessageEventListeners();
     }
 
-    // Re-attach listeners to new elements
-    this.attachMessageEventListeners();
-}
+    formatMessageContent(content) {
+        // Escape HTML first
+        let formatted = Utils.escapeHtml(content);
 
-formatMessageContent(content) {
-    // Escape HTML first
-    let formatted = Utils.escapeHtml(content);
+        // Code blocks (```language...```)
+        formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+            return `<pre class="code-block" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 0.5rem 0; position: relative;"><code class="language-${lang || 'plaintext'}">${code.trim()}</code><button onclick="copyCode(this)" style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(255,255,255,0.1); border: none; color: var(--text-muted); padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">COPY</button></pre>`;
+        });
 
-    // Code blocks (```language...```)
-    formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
-        return `<pre class="code-block" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 0.5rem 0; position: relative;"><code class="language-${lang || 'plaintext'}">${code.trim()}</code><button onclick="copyCode(this)" style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(255,255,255,0.1); border: none; color: var(--text-muted); padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">COPY</button></pre>`;
-    });
+        // Inline code (before other formatting to preserve backticks)
+        formatted = formatted.replace(/`([^`]+)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: JetBrains Mono, monospace;">$1</code>');
 
-    // Inline code (before other formatting to preserve backticks)
-    formatted = formatted.replace(/`([^`]+)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: JetBrains Mono, monospace;">$1</code>');
+        // Headings (must process before line breaks)
+        formatted = formatted.replace(/^#### (.+)$/gm, '<h4 class="markdown-content" style="font-size: 1.1rem; font-weight: 600; margin: 1rem 0 0.5rem 0; color: var(--text-main);">$1</h4>');
+        formatted = formatted.replace(/^### (.+)$/gm, '<h3 class="markdown-content" style="font-size: 1.25rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; color: var(--text-main);">$1</h3>');
+        formatted = formatted.replace(/^## (.+)$/gm, '<h2 class="markdown-content" style="font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.75rem 0; color: var(--text-main);">$1</h2>');
+        formatted = formatted.replace(/^# (.+)$/gm, '<h1 class="markdown-content" style="font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 0.75rem 0; color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">$1</h1>');
 
-    // Headings (must process before line breaks)
-    formatted = formatted.replace(/^#### (.+)$/gm, '<h4 class="markdown-content" style="font-size: 1.1rem; font-weight: 600; margin: 1rem 0 0.5rem 0; color: var(--text-main);">$1</h4>');
-    formatted = formatted.replace(/^### (.+)$/gm, '<h3 class="markdown-content" style="font-size: 1.25rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; color: var(--text-main);">$1</h3>');
-    formatted = formatted.replace(/^## (.+)$/gm, '<h2 class="markdown-content" style="font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.75rem 0; color: var(--text-main);">$1</h2>');
-    formatted = formatted.replace(/^# (.+)$/gm, '<h1 class="markdown-content" style="font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 0.75rem 0; color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">$1</h1>');
+        // Bold & Italic
+        formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
-    // Bold & Italic
-    formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        // Lists
+        formatted = formatted.replace(/^- (.+)$/gm, '<li style="margin-left: 1rem; list-style-type: disc;">$1</li>');
+        formatted = formatted.replace(/^\* (.+)$/gm, '<li style="margin-left: 1rem; list-style-type: disc;">$1</li>');
+        formatted = formatted.replace(/^(\d+)\. (.+)$/gm, '<li style="margin-left: 1rem; list-style-type: decimal;">$2</li>');
 
-    // Lists
-    formatted = formatted.replace(/^- (.+)$/gm, '<li style="margin-left: 1rem; list-style-type: disc;">$1</li>');
-    formatted = formatted.replace(/^\* (.+)$/gm, '<li style="margin-left: 1rem; list-style-type: disc;">$1</li>');
-    formatted = formatted.replace(/^(\d+)\. (.+)$/gm, '<li style="margin-left: 1rem; list-style-type: decimal;">$2</li>');
+        // Line breaks
+        formatted = formatted.replace(/\n/g, '<br>');
 
-    // Line breaks
-    formatted = formatted.replace(/\n/g, '<br>');
-
-    return formatted;
-}
+        return formatted;
+    }
 
     async handleSendMessage(e) {
-    e.preventDefault();
+        e.preventDefault();
 
-    const input = document.getElementById('message-input');
-    const message = input.value.trim();
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
 
-    if (!message || this.isStreaming) return;
+        if (!message || this.isStreaming) return;
 
-    input.value = '';
-    input.style.height = '48px'; // Reset height
-    this.isStreaming = true;
-    document.getElementById('send-btn').disabled = true;
+        input.value = '';
+        input.style.height = '48px'; // Reset height
+        this.isStreaming = true;
+        document.getElementById('send-btn').disabled = true;
 
-    // Hide welcome message
-    const welcome = document.getElementById('welcome-message');
-    if (welcome) welcome.style.display = 'none';
+        // Hide welcome message
+        const welcome = document.getElementById('welcome-message');
+        if (welcome) welcome.style.display = 'none';
 
-    // Add user message to UI
-    const messagesContainer = document.getElementById('messages-list');
-    // Temp ID for immediate display
-    const tempId = 'temp-' + Date.now();
+        // Add user message to UI
+        const messagesContainer = document.getElementById('messages-list');
+        // Temp ID for immediate display
+        const tempId = 'temp-' + Date.now();
 
-    messagesContainer.insertAdjacentHTML('beforeend', this.renderSingleMessage({
-        role: 'user',
-        content: message,
-        id: tempId
-    }, 0, true)); // true = isLast
+        messagesContainer.insertAdjacentHTML('beforeend', this.renderSingleMessage({
+            role: 'user',
+            content: message,
+            id: tempId
+        }, 0, true)); // true = isLast
 
-    // Add assistant placeholder
-    const assistantId = 'assistant-' + Date.now();
-    messagesContainer.insertAdjacentHTML('beforeend', `
+        // Add assistant placeholder
+        const assistantId = 'assistant-' + Date.now();
+        messagesContainer.insertAdjacentHTML('beforeend', `
             <div id="${assistantId}" class="chat-message assistant" style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
                 <div class="avatar" style="width: 36px; height: 36px; border-radius: 50%; background: var(--secondary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                     <i class="material-symbols-outlined" style="font-size: 1.2rem; color: #000;">smart_toy</i>
@@ -610,127 +609,127 @@ formatMessageContent(content) {
                 </div>
             </div>
         `);
-    this.scrollToBottom();
+        this.scrollToBottom();
 
-    // Send to API with SSE
-    this.abortController = new AbortController();
-    document.getElementById('send-btn').style.display = 'none';
-    document.getElementById('stop-btn').style.display = 'block';
+        // Send to API with SSE
+        this.abortController = new AbortController();
+        document.getElementById('send-btn').style.display = 'none';
+        document.getElementById('stop-btn').style.display = 'block';
 
-    try {
-        const token = localStorage.getItem('access_token');
-        const response = await fetch(`${Api.baseUrl}/chat/send`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                session_id: this.currentSessionId,
-                message: message
-            }),
-            signal: this.abortController.signal
-        });
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch(`${Api.baseUrl}/chat/send`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    session_id: this.currentSessionId,
+                    message: message
+                }),
+                signal: this.abortController.signal
+            });
 
-        await this.processStreamResponse(response, assistantId);
+            await this.processStreamResponse(response, assistantId);
 
-    } catch (error) {
-        if (error.name !== 'AbortError') {
-            Utils.showToast('Failed to send message: ' + error.message, 'error');
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                Utils.showToast('Failed to send message: ' + error.message, 'error');
+            }
+        } finally {
+            this.cleanupStreamingState();
         }
-    } finally {
-        this.cleanupStreamingState();
     }
-}
 
-stopStreaming() {
-    if (this.abortController) {
-        this.abortController.abort();
+    stopStreaming() {
+        if (this.abortController) {
+            this.abortController.abort();
+        }
     }
-}
 
     async createNewChat() {
-    this.currentSessionId = null;
-    this.renderSessionList();
+        this.currentSessionId = null;
+        this.renderSessionList();
 
-    document.getElementById('chat-title').textContent = 'New Conversation';
-    document.getElementById('delete-session-btn').style.display = 'none';
-    document.getElementById('edit-title-btn').style.display = 'none';
-    document.getElementById('messages-list').innerHTML = `
+        document.getElementById('chat-title').textContent = 'New Conversation';
+        document.getElementById('delete-session-btn').style.display = 'none';
+        document.getElementById('edit-title-btn').style.display = 'none';
+        document.getElementById('messages-list').innerHTML = `
             <div id="welcome-message" style="text-align: center; padding: 3rem; color: var(--text-muted);">
                 <i class="material-symbols-outlined" style="font-size: 4rem; color: var(--primary); opacity: 0.5;">smart_toy</i>
                 <h3 style="margin-top: 1rem; color: var(--text);">Start a New Conversation</h3>
                 <p style="font-size: 0.9rem;">Type your message below to begin chatting with Cybiz AI.</p>
             </div>
         `;
-}
+    }
 
     async editTitle() {
-    if (!this.currentSessionId) return;
+        if (!this.currentSessionId) return;
 
-    const titleEl = document.getElementById('chat-title');
-    const currentTitle = titleEl.textContent;
-    const editBtn = document.getElementById('edit-title-btn');
+        const titleEl = document.getElementById('chat-title');
+        const currentTitle = titleEl.textContent;
+        const editBtn = document.getElementById('edit-title-btn');
 
-    // Already editing
-    if (titleEl.querySelector('input')) return;
+        // Already editing
+        if (titleEl.querySelector('input')) return;
 
-    // Create inline input
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = currentTitle;
-    input.className = 'inline-edit-input';
-    input.style.cssText = 'background: rgba(0,0,0,0.4); border: 1px solid var(--primary); border-radius: 4px; color: var(--text-main); padding: 0.25rem 0.5rem; font-family: inherit; font-size: inherit; width: 200px; outline: none;';
+        // Create inline input
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentTitle;
+        input.className = 'inline-edit-input';
+        input.style.cssText = 'background: rgba(0,0,0,0.4); border: 1px solid var(--primary); border-radius: 4px; color: var(--text-main); padding: 0.25rem 0.5rem; font-family: inherit; font-size: inherit; width: 200px; outline: none;';
 
-    // Replace title with input
-    titleEl.textContent = '';
-    titleEl.appendChild(input);
-    input.focus();
-    input.select();
+        // Replace title with input
+        titleEl.textContent = '';
+        titleEl.appendChild(input);
+        input.focus();
+        input.select();
 
-    // Hide edit button during editing
-    editBtn.style.display = 'none';
+        // Hide edit button during editing
+        editBtn.style.display = 'none';
 
-    const saveTitle = async () => {
-        const newTitle = input.value.trim();
-        if (newTitle && newTitle !== currentTitle) {
-            try {
-                await Api.put(`/chat/sessions/${this.currentSessionId}/title`, { title: newTitle });
-                titleEl.textContent = newTitle;
-                await this.loadSessions();
-                Utils.showToast('Title updated', 'success');
-            } catch (error) {
+        const saveTitle = async () => {
+            const newTitle = input.value.trim();
+            if (newTitle && newTitle !== currentTitle) {
+                try {
+                    await Api.put(`/chat/sessions/${this.currentSessionId}/title`, { title: newTitle });
+                    titleEl.textContent = newTitle;
+                    await this.loadSessions();
+                    Utils.showToast('Title updated', 'success');
+                } catch (error) {
+                    titleEl.textContent = currentTitle;
+                    Utils.showToast('Failed to update title', 'error');
+                }
+            } else {
                 titleEl.textContent = currentTitle;
-                Utils.showToast('Failed to update title', 'error');
             }
-        } else {
-            titleEl.textContent = currentTitle;
-        }
-        editBtn.style.display = 'block';
-    };
-
-    // Save on Enter, cancel on Escape
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            saveTitle();
-        } else if (e.key === 'Escape') {
-            titleEl.textContent = currentTitle;
             editBtn.style.display = 'block';
-        }
-    });
+        };
 
-    // Save on blur
-    input.addEventListener('blur', saveTitle);
-}
+        // Save on Enter, cancel on Escape
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveTitle();
+            } else if (e.key === 'Escape') {
+                titleEl.textContent = currentTitle;
+                editBtn.style.display = 'block';
+            }
+        });
 
-showDeleteModal(sessionId) {
-    // Create modal container
-    const modal = document.createElement('div');
-    modal.id = 'delete-modal';
-    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;';
+        // Save on blur
+        input.addEventListener('blur', saveTitle);
+    }
 
-    modal.innerHTML = `
+    showDeleteModal(sessionId) {
+        // Create modal container
+        const modal = document.createElement('div');
+        modal.id = 'delete-modal';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;';
+
+        modal.innerHTML = `
             <div class="glass" style="width: 100%; max-width: 400px; padding: 2rem; border-radius: 12px; border: 1px solid var(--danger); transform: scale(0.9); transition: transform 0.3s; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
                 <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
                     <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255, 71, 87, 0.1); display: flex; align-items: center; justify-content: center; color: var(--danger);">
@@ -748,65 +747,65 @@ showDeleteModal(sessionId) {
             </div>
         `;
 
-    document.body.appendChild(modal);
+        document.body.appendChild(modal);
 
-    // Animate in
-    requestAnimationFrame(() => {
-        modal.style.opacity = '1';
-        modal.querySelector('.glass').style.transform = 'scale(1)';
-    });
+        // Animate in
+        requestAnimationFrame(() => {
+            modal.style.opacity = '1';
+            modal.querySelector('.glass').style.transform = 'scale(1)';
+        });
 
-    // Handlers
-    const closeModal = () => {
-        modal.style.opacity = '0';
-        modal.querySelector('.glass').style.transform = 'scale(0.9)';
-        setTimeout(() => modal.remove(), 300);
-    };
+        // Handlers
+        const closeModal = () => {
+            modal.style.opacity = '0';
+            modal.querySelector('.glass').style.transform = 'scale(0.9)';
+            setTimeout(() => modal.remove(), 300);
+        };
 
-    modal.querySelector('#cancel-delete-btn').onclick = closeModal;
-    modal.onclick = (e) => {
-        if (e.target === modal) closeModal();
-    };
+        modal.querySelector('#cancel-delete-btn').onclick = closeModal;
+        modal.onclick = (e) => {
+            if (e.target === modal) closeModal();
+        };
 
-    modal.querySelector('#confirm-delete-btn').onclick = async () => {
-        try {
-            const btn = document.getElementById('confirm-delete-btn');
-            btn.innerHTML = '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 1.2rem;">sync</span>';
+        modal.querySelector('#confirm-delete-btn').onclick = async () => {
+            try {
+                const btn = document.getElementById('confirm-delete-btn');
+                btn.innerHTML = '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 1.2rem;">sync</span>';
 
-            await Api.delete(`/chat/sessions/${sessionId}`);
+                await Api.delete(`/chat/sessions/${sessionId}`);
 
-            if (this.currentSessionId === sessionId) {
-                this.currentSessionId = null;
-                this.createNewChat();
+                if (this.currentSessionId === sessionId) {
+                    this.currentSessionId = null;
+                    this.createNewChat();
+                }
+
+                await this.loadSessions();
+                Utils.showToast('Conversation deleted', 'success');
+                closeModal();
+            } catch (err) {
+                console.error(err);
+                Utils.showToast('Failed to delete conversation', 'error');
+                closeModal();
             }
-
-            await this.loadSessions();
-            Utils.showToast('Conversation deleted', 'success');
-            closeModal();
-        } catch (err) {
-            console.error(err);
-            Utils.showToast('Failed to delete conversation', 'error');
-            closeModal();
-        }
-    };
-}
+        };
+    }
 
     async deleteCurrentSession() {
-    if (!this.currentSessionId) return;
-    this.showDeleteModal(this.currentSessionId);
-}
+        if (!this.currentSessionId) return;
+        this.showDeleteModal(this.currentSessionId);
+    }
 
     async checkOllamaStatus() {
-    const statusEl = document.getElementById('ollama-status');
-    try {
-        const data = await Api.get('/chat/health');
-        if (data.ollama_connected && data.model_available) {
-            statusEl.innerHTML = `
+        const statusEl = document.getElementById('ollama-status');
+        try {
+            const data = await Api.get('/chat/health');
+            if (data.ollama_connected && data.model_available) {
+                statusEl.innerHTML = `
                     <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: var(--primary);"></span>
                     <span style="color: var(--primary);">AI: Ready</span>
                 `;
-        } else if (data.ollama_connected && !data.model_available) {
-            statusEl.innerHTML = `
+            } else if (data.ollama_connected && !data.model_available) {
+                statusEl.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #ffa502;"></span>
@@ -815,24 +814,24 @@ showDeleteModal(sessionId) {
                         <div style="font-size: 0.6rem; color: var(--text-muted); opacity: 0.8;">Check Ollama models</div>
                     </div>
                 `;
-        } else {
-            statusEl.innerHTML = `
+            } else {
+                statusEl.innerHTML = `
                     <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #ff4757;"></span>
                     <span style="color: #ff4757;">Ollama Offline</span>
                 `;
-        }
-    } catch {
-        statusEl.innerHTML = `
+            }
+        } catch {
+            statusEl.innerHTML = `
                 <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #666;"></span>
                 <span style="color: #666;">Status Unknown</span>
             `;
+        }
     }
-}
 
-scrollToBottom() {
-    const container = document.getElementById('messages-container');
-    container.scrollTop = container.scrollHeight;
-}
+    scrollToBottom() {
+        const container = document.getElementById('messages-container');
+        container.scrollTop = container.scrollHeight;
+    }
 }
 
 // Global functions for copy buttons
