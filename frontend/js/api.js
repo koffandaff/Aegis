@@ -1,10 +1,13 @@
 // Dynamic API URL for remote access
-// Priority: 1. localStorage override 2. window.APP_CONFIG 3. auto-detect
+// Priority: 1. localStorage override 2. window.APP_CONFIG 3. production detect 4. local
 const storedApiUrl = localStorage.getItem('api_url');
 const configApiUrl = window.APP_CONFIG?.API_URL;
-const API_URL = storedApiUrl || configApiUrl || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:8000/api'
-    : `${window.location.protocol}//${window.location.hostname}:8000/api`);
+const isProduction = window.location.hostname.includes('vercel.app');
+const API_URL = storedApiUrl || configApiUrl || (isProduction
+    ? 'https://reconauto-backend.vercel.app/api'
+    : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:8000/api'
+        : `${window.location.protocol}//${window.location.hostname}:8000/api`));
 
 
 class Api {
