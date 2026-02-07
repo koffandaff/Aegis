@@ -1,13 +1,20 @@
-// Dynamic API URL for remote access
-// Priority: 1. localStorage override 2. window.APP_CONFIG 3. production detect 4. local
 const storedApiUrl = localStorage.getItem('api_url');
-const configApiUrl = window.APP_CONFIG?.API_URL;
 const isProduction = window.location.hostname.includes('vercel.app');
-const API_URL = storedApiUrl || configApiUrl || (isProduction
-    ? 'https://reconauto-backend.vercel.app/api'
-    : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:8000/api'
-        : `${window.location.protocol}//${window.location.hostname}:8000/api`));
+
+// Prioritize stored URL, then environment detection. 
+// Only use config.js override if we are in production or if it's explicitly set for dev but we want to ignore it for localhost unless forced.
+let API_URL = storedApiUrl;
+
+if (!API_URL) {
+    if (isProduction) {
+        API_URL = window.APP_CONFIG?.API_URL || 'https://reconauto-backend.vercel.app/api';
+    } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        API_URL = 'http://localhost:8000/api';
+    } else {
+        // Network access (e.g. 192.168.x.x)
+        API_URL = `${window.location.protocol}//${window.location.hostname}:8000/api`;
+    }
+}
 
 
 class Api {

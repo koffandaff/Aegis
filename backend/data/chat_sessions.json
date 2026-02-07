@@ -908,6 +908,48 @@
       ],
       "created_at": "2026-02-07T18:38:31.646221Z",
       "updated_at": "2026-02-07T18:38:33.021481Z"
+    },
+    {
+      "id": "9e88df07-6e11-42ae-97fe-45acc1b12146",
+      "user_id": "64d7378a-ed49-4b43-988f-e527e48c7688",
+      "title": "Hello, are you there?",
+      "messages": [
+        {
+          "id": "6b0040dd-8edf-4eff-a401-d03c87b87c17",
+          "role": "user",
+          "content": "Hello, are you there?",
+          "timestamp": "2026-02-07T19:43:56.547129Z"
+        },
+        {
+          "id": "693d42e2-3ddd-4699-be58-57221e799cb0",
+          "role": "assistant",
+          "content": "Yes, I'm here! How can I assist you today?",
+          "timestamp": "2026-02-07T19:43:57.687017Z"
+        }
+      ],
+      "created_at": "2026-02-07T19:43:56.547101Z",
+      "updated_at": "2026-02-07T19:43:57.687084Z"
+    },
+    {
+      "id": "e35424c3-4f8e-4c46-aacc-763c8edb1c5d",
+      "user_id": "c95e88e4-a86b-4ae6-9ae2-884e7d008e4f",
+      "title": "hi",
+      "messages": [
+        {
+          "id": "484e763a-93f7-421f-bee4-3c0330641788",
+          "role": "user",
+          "content": "hi",
+          "timestamp": "2026-02-07T19:47:09.988581Z"
+        },
+        {
+          "id": "9eaf63fd-493d-4e0f-8890-e2028ee7dd00",
+          "role": "assistant",
+          "content": "Hello Dhruvil! How can I assist you today? Whether you're looking to scan a network, check a domain's footprint, or need help understanding cybersecurity concepts, I'm here to help. Just let me know how I can assist you!",
+          "timestamp": "2026-02-07T19:47:12.830828Z"
+        }
+      ],
+      "created_at": "2026-02-07T19:47:09.988527Z",
+      "updated_at": "2026-02-07T19:47:12.830921Z"
     }
   ]
 }

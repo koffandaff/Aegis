@@ -65,6 +65,9 @@ class ChatService:
     async def _stream_response(self, session_id: str, user_id: str, context: List[Dict], username: str) -> AsyncGenerator[str, None]:
         """Internal helper to stream response from Ollama"""
         
+        # Send initial status to confirm connection is alive
+        yield json.dumps({"type": "token", "content": "..."}) 
+
         # Build system prompt with user context
         system_prompt = f"""You are Cybiz (created by Dhruvil), the advanced AI assistant for Fsociety, a comprehensive cybersecurity platform. 
 The user's name is {username}. 
