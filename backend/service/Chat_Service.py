@@ -62,10 +62,6 @@ class ChatService:
             print(f"Ollama health check failed: {e}")
             return {"connected": False, "model_available": False, "debug_url": self.ollama_url}
     
-    def _format_sse(self, data: dict) -> str:
-        """Format data as Server-Sent Event"""
-        return f"data: {json.dumps(data)}\n\n"
-
     async def _stream_response(self, session_id: str, user_id: str, context: List[Dict], username: str) -> AsyncGenerator[str, None]:
         """Internal helper to stream response from Ollama"""
         
@@ -111,7 +107,7 @@ Your Role:
                     json=ollama_payload
                 ) as response:
                     if response.status_code != 200:
-                        yield self._format_sse({"error": f"Ollama error: {response.status_code}"})
+                        yield json.dumps({"error": f"Ollama error: {response.status_code}"})
                         return
                     
                     async for line in response.aiter_lines():
@@ -122,10 +118,10 @@ Your Role:
                                 if "message" in data and "content" in data["message"]:
                                     content = data["message"]["content"]
                                     full_response += content
-                                    yield self._format_sse({"content": content, "type": "token"})
+                                    yield json.dumps({"content": content, "type": "token"})
                                 
                                 if data.get("done", False):
-                                    yield self._format_sse({"type": "done"})
+                                    yield json.dumps({"type": "done"})
                                     break
                                     
                             except json.JSONDecodeError:
@@ -142,15 +138,15 @@ Your Role:
                     )
                     
         except httpx.TimeoutException:
-            yield self._format_sse({"error": "Ollama request timed out. The model is taking too long to respond."})
+            yield json.dumps({"error": "Ollama request timed out. The model is taking too long to respond."})
         except httpx.ConnectError:
-            yield self._format_sse({"error": "Connection refused. Ensure Ollama is running on port 11434."})
+            yield json.dumps({"error": "Connection refused. Ensure Ollama is running on port 11434."})
         except httpx.HTTPStatusError as e:
-            yield self._format_sse({"error": f"Ollama returned HTTP {e.response.status_code}: {e.response.text}"})
+            yield json.dumps({"error": f"Ollama returned HTTP {e.response.status_code}: {e.response.text}"})
         except Exception as e:
             import traceback
             traceback.print_exc()
-            yield self._format_sse({"error": f"Internal Error: {str(e)}"})
+            yield json.dumps({"error": f"Internal Error: {str(e)}"})
 
     async def send_message_stream(
         self, 
@@ -167,7 +163,7 @@ Your Role:
         if session_id:
             session = self.db.get_session(session_id, user_id)
             if not session:
-                yield self._format_sse({"error": "Session not found"})
+                yield json.dumps({"error": "Session not found"})
                 return
             # Add user message to database for existing session
             self.db.add_message(session_id, user_id, "user", message)
@@ -175,7 +171,7 @@ Your Role:
             # Create new session (creates message internally)
             session = self.db.create_session(user_id, message)
             session_id = session.id
-            yield self._format_sse({"session_id": session_id, "type": "session_created"})
+            yield json.dumps({"session_id": session_id, "type": "session_created"})
         
         # Get context messages for Ollama (Increased Limit)
         context = self.db.get_context_messages(session_id, user_id, limit=200)
@@ -198,7 +194,7 @@ Your Role:
         updated_messages = self.db.edit_message(session_id, user_id, message_id, new_content)
         
         if updated_messages is None:
-            yield self._format_sse({"error": "Failed to edit message"})
+            yield json.dumps({"error": "Failed to edit message"})
             return
             
         # Get updated context
