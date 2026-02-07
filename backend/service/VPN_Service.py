@@ -82,9 +82,10 @@ class VPNService:
                 server_id = s['id']
                 break
 
-        # Create unique client name for certificate
+        # Create unique client name for certificate (Safe for filename)
         config_id = str(uuid.uuid4())
-        client_name = f"{user_id}_{server_id}_{config_id[:8]}"
+        # Use a generic name pattern to avoid exposing sensitive info in filenames
+        client_name = f"fsociety_user_{config_id[:8]}"
         
         # Generate REAL client certificate using PKI
         client_cert, client_key = pki_manager.generate_client_certificate(client_name)
@@ -98,29 +99,24 @@ class VPNService:
         # Build OpenVPN config with real certs
         try:
             config_content = self._build_openvpn_config(
-                server_ip=self.vpn_server_ip,
-                port=self.vpn_server_port,
-                protocol=self.vpn_protocol,
-                ca_cert=ca_cert,
-                client_cert=client_cert,
-                client_key=client_key,
-                ta_key=ta_key
+                server=request.server_address,
+                port=request.port,
+                proto=request.protocol,
+                ca=ca_cert,
+                cert=client_cert,
+                key=client_key,
+                ta=ta_key
             )
-        except Exception as e:
-            # Fallback for environments without VPN binaries (e.g. Vercel)
-            print(f"VPN Generation failed, using MOCK data: {e}")
+        except Exception:
+             # Fallback to MOCK config if real PKI fails (e.g. on Windows without easy-rsa)
             config_content = self._build_mock_openvpn_config(server_name, user_id)
-        
-        # Create filename: username_fsociety_servername
-        safe_server_name = server_id.replace("-", "_").replace(" ", "_")
-        config_filename = f"{user_id}_fsociety_{safe_server_name}"
         
         config = VPNConfigResponse(
             id=config_id,
             user_id=user_id,
             type="openvpn",
-            name=server_name,
-            filename=config_filename,
+            name=f"{server_name} - {config_id[:4].upper()}",
+            filename=f"fsociety_vpn_{server_id}_{config_id[:4]}", # Clean filename
             config_content=config_content,
             created_at=datetime.now(timezone.utc)
         )
@@ -269,7 +265,18 @@ mute 20
         Get all VPN configs for a user.
         """
         configs = self.vpn_repo.get_by_user(user_id)
-        return [VPNConfigResponse(**c.to_dict()) if hasattr(c, 'to_dict') else VPNConfigResponse(**c.__dict__) for c in configs]
+        return [
+            VPNConfigResponse(
+                id=c.id,
+                user_id=c.user_id,
+                type=c.config_type,  # Map config_type to type
+                name=c.filename or f"VPN-{c.server_id}", # Map filename or server_id to name
+                filename=c.filename,
+                config_content=c.config_content,
+                created_at=c.created_at
+            )
+            for c in configs
+        ]
     
     def get_server_setup_files(self) -> Dict:
         """
