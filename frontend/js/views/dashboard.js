@@ -107,7 +107,7 @@ class DashboardView {
             const response = await fetch(`${rootUrl}/status`);
             const statusData = await response.json();
 
-            if (statusData.system) {
+            if (statusData && statusData.system) {
                 const cpuEl = document.getElementById('stat-cpu');
                 const memEl = document.getElementById('stat-memory');
                 const diskEl = document.getElementById('stat-disk');

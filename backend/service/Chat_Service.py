@@ -28,8 +28,8 @@ class ChatService:
             return {"connected": False, "model_available": False}
             
         try:
-            # Add Host header to bypass Ngrok/Ollama browser checks
-            headers = {"Host": "localhost:11434"}
+            # Bypass Ngrok browser warning
+            headers = {"ngrok-skip-browser-warning": "true"}
             async with httpx.AsyncClient(timeout=5.0, headers=headers) as client:
                 response = await client.get(f"{self.ollama_url}/api/tags")
                 if response.status_code != 200:
@@ -67,8 +67,7 @@ class ChatService:
         full_response = ""
         
         try:
-            # Add Host header here too
-            headers = {"Host": "localhost:11434"}
+            headers = {"ngrok-skip-browser-warning": "true"}
             async with httpx.AsyncClient(timeout=self.timeout, headers=headers) as client:
                 async with client.stream(
                     "POST",

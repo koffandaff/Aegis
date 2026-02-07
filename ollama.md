@@ -1,60 +1,42 @@
-# 🤖 Ollama & Ngrok Setup Guide
+# 🤖 Ollama & Ngrok Setup Guide (Final Version)
 
-To ensure **Fsociety** can connect to your local Ollama instance (especially from Vercel), you need to configure Ollama to accept external connections.
+Since the automatic code fix was reverted (it caused routing issues), you **MUST** follow these steps to make Ollama accessible to the backend.
 
-## 1. Stop Ollama Completely
-- Right-click the Ollama icon in your Windows System Tray (near the clock) and click **Quit**.
-- Or run `Stop-Process -Name "ollama_app_v2" -Force` in PowerShell.
+## 1. Stop Ollama
+Make sure Ollama is **NOT** running. Check your system tray (bottom right, near clock) and Right Click -> Quit.
 
-## 2. Configure & Start Ollama (PowerShell)
-Run these commands in a **PowerShell** window. This sets Ollama to listen on all interfaces (`0.0.0.0`) and accept requests from any origin (`*`).
-
-> **Why `*` (Allow All)?**
-> We use `*` because the free version of Ngrok changes your URL every time you restart it. If you restrict it to specific URLs, you would have to update this configuration every single session. Since this is running on your local machine for development, `*` is acceptable.
+## 2. Start Ollama (PowerShell)
+Open a new **PowerShell** window and run this **exact** block to allow external connections:
 
 ```powershell
-# Set Environment Variables
+# 1. Allow connections from anywhere
 $env:OLLAMA_HOST = "0.0.0.0"
 $env:OLLAMA_ORIGINS = "*"
 
-# Start Ollama
+# 2. Start Ollama
 ollama serve
 ```
 
-*(Keep this window open!)*
-
----
+> **Keep this window open!** You should see logs like `Listening on 0.0.0.0:11434`.
 
 ## 3. Start Ngrok (New Terminal)
-In a **new** terminal window, run Ngrok to expose port `11434`.
-
-**Crucial:** Use the `--host-header` flag. This tricks Ollama into thinking the request is coming from `localhost`, bypassing some security checks.
+Open a separate terminal and run this **exact** command. The `--host-header` flag is critical to trick Ollama into accepting the traffic.
 
 ```bash
 ngrok http 11434 --host-header="localhost:11434"
+# OR if using npx
+npx ngrok http 11434 --host-header="localhost:11434"
 ```
 
-## 4. Get Your Ngrok URL
-Copy the `https://....ngrok-free.dev` URL from the terminal output.
-
-## 5. Update Backend Configuration
-1. Open `backend/.env`
-2. Update `OLLAMA_URL`:
+## 4. Connect Backend
+1. Copy the `https://....ngrok-free.dev` URL from the ngrok terminal.
+2. Paste it into your `backend/.env` file:
    ```env
-   # Example
-   OLLAMA_URL=https://your-ngrok-url.ngrok-free.dev
+   OLLAMA_URL=https://your-url.ngrok-free.dev
    ```
-3. Restart your Backend (`fastapi dev` or redeploy to Vercel).
+3. **Restart your backend** (`fastapi dev`) to apply the change.
 
----
-
-## 💡 Troubleshooting
-
-### "403 Forbidden" or "Access Denied"
-- Ensure you used `--host-header="localhost:11434"` in the ngrok command.
-- Ensure `OLLAMA_ORIGINS="*"` was set **before** starting `ollama serve`.
-- **Note:** The backend code (`Chat_Service.py`) has been patched to automatically send the correct Host header, so API requests should work even if browser visits show 403.
-
-### "Connection Refused"
-- Ensure Ollama is actually running (`ollama serve`).
-- Ensure it's listening on `0.0.0.0` (not just `127.0.0.1`).
+## ✅ Verification
+If everything is correct:
+- **Browser:** Visiting `https://your-url.ngrok-free.dev` might still show "Deep 404" or a warning, but...
+- **Backend:** The Chat feature in Fsociety will work!
