@@ -126,7 +126,24 @@ class Router {
             }
         } catch (e) {
             console.error('Route Error', e);
-            this.app.innerHTML = '<h1>Error loading page</h1>';
+            // Improve UX: Don't nuke the page, just show a toast
+            // If it's a critical initial load failure, maybe show a better error state
+            if (!this.currentView) {
+                this.app.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center;">
+                        <span class="material-symbols-outlined" style="font-size: 4rem; color: #ff4757; margin-bottom: 1rem;">error_outline</span>
+                        <h1>Something went wrong</h1>
+                        <p style="color: var(--text-muted); margin-bottom: 2rem;">Failed to load the requested page.</p>
+                        <a href="#/" class="btn-primary">Return Home</a>
+                    </div>
+                `;
+            } else {
+                // If we already have a view, just notify
+                // Dynamic import to avoid circular dependency if Utils isn't globally available, 
+                // but assuming it is or we can get it from somewhere. 
+                // For now, let's use a simple alert fallback or console.
+                alert("Error loading content: " + e.message);
+            }
         }
     }
 

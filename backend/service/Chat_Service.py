@@ -30,7 +30,7 @@ class ChatService:
         try:
             # Bypass Ngrok browser warning
             headers = {"ngrok-skip-browser-warning": "true"}
-            async with httpx.AsyncClient(timeout=5.0, headers=headers) as client:
+            async with httpx.AsyncClient(timeout=90.0, headers=headers) as client:
                 response = await client.get(f"{self.ollama_url}/api/tags")
                 if response.status_code != 200:
                     return {"connected": False, "model_available": False}

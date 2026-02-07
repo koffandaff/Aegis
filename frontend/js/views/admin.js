@@ -536,6 +536,58 @@ class AdminView {
         }
     }
 
+    // ==================== PAGINATION LOGIC ====================
+    initActivityPagination() {
+        this.currentActivityPage = 1;
+
+        const prevBtn = document.getElementById('prev-activity-page');
+        const nextBtn = document.getElementById('next-activity-page');
+        const limitSelect = document.getElementById('activity-limit');
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => this.changeActivityPage(-1));
+        }
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => this.changeActivityPage(1));
+        }
+        if (limitSelect) {
+            limitSelect.addEventListener('change', () => {
+                this.currentActivityPage = 1; // Reset to page 1 on limit change
+                this.loadActivities();
+            });
+        }
+    }
+
+    changeActivityPage(delta) {
+        this.currentActivityPage += delta;
+        if (this.currentActivityPage < 1) this.currentActivityPage = 1;
+        this.loadActivities();
+    }
+
+    updatePaginationControls(currentPage, hasNext) {
+        const prevBtn = document.getElementById('prev-activity-page');
+        const nextBtn = document.getElementById('next-activity-page');
+        const pageInfo = document.getElementById('page-info');
+
+        if (pageInfo) pageInfo.textContent = `Page ${currentPage}`;
+
+        if (prevBtn) {
+            prevBtn.disabled = currentPage <= 1;
+            prevBtn.style.opacity = currentPage <= 1 ? '0.5' : '1';
+            prevBtn.style.cursor = currentPage <= 1 ? 'not-allowed' : 'pointer';
+        }
+
+        if (nextBtn) {
+            // If we have fewer items than limit, it's likely the last page
+            const limit = parseInt(document.getElementById('activity-limit')?.value || 30);
+            const isLastPage = this.activities.length < limit;
+
+            nextBtn.disabled = isLastPage;
+            nextBtn.style.opacity = isLastPage ? '0.5' : '1';
+            nextBtn.style.cursor = isLastPage ? 'not-allowed' : 'pointer';
+        }
+    }
+
     renderActivities() {
         const container = document.getElementById('activity-logs');
         if (!container) return;
