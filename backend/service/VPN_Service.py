@@ -126,7 +126,11 @@ class VPNService:
         )
         
         # Store in DB
-        self.vpn_repo.create(config.model_dump())
+        config_data = config.model_dump()
+        config_data["server_id"] = server_id
+        config_data["config_type"] = "openvpn"
+        
+        self.vpn_repo.create(config_data)
         
         # Log VPN activity
         self.activity_repo.log_activity(
@@ -251,7 +255,12 @@ mute 20
         )
         
         # Store in DB
-        self.vpn_repo.create(config.model_dump())
+        config_data = config.model_dump()
+        config_data["config_type"] = "wireguard"
+        # WireGuard doesn't strictly have a 'server_id' from our list, but we can imply one
+        config_data["server_id"] = "wireguard-custom" 
+        
+        self.vpn_repo.create(config_data)
         
         return config
 

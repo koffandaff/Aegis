@@ -22,6 +22,18 @@ class VpnView {
                 <div style="flex: 1; padding: 2rem; overflow-y: auto;">
                     <h1 class="page-title fade-in">Fsociety Secure Tunnel</h1>
                     
+                    <!-- Disclaimer Banner -->
+                    <div class="fade-in" style="background: rgba(231, 76, 60, 0.1); border-left: 4px solid #e74c3c; padding: 1rem; margin-bottom: 2rem; border-radius: 4px;">
+                        <strong style="color: #e74c3c; display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="material-symbols-outlined">warning</span> DISCLAIMER: DEMO MODE
+                        </strong>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; margin-bottom: 0;">
+                            This VPN service is currently running in <strong>simulation mode</strong> with dummy configurations. 
+                            In a real production environment, properly hosting these VPN servers would require significant infrastructure costs and could potentially expose the server's IP address (doxing risk). 
+                            <strong>Do not use these generated configurations for sensitive activities.</strong>
+                        </p>
+                    </div>
+                    
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; max-width: 1200px; margin: 0 auto; margin-bottom: 2rem;">
                         
                         <!-- Connection Center -->

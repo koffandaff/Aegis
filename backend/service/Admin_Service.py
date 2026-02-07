@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from database.repositories.user_repository import UserRepository
 from database.repositories.activity_repository import ActivityRepository
 from database.repositories.chat_repository import ChatRepository
-from model.Chat_Model import ChatSession, ChatMessage
+from database.models import ChatSession, ChatMessage
 
 
 class AdminService:

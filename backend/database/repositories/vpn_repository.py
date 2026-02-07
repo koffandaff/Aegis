@@ -8,7 +8,7 @@ from database.repositories.base import BaseRepository
 
 class VPNRepository(BaseRepository[VPNConfig]):
     def __init__(self, db: Session):
-        super().__init__(db, VPNConfig)
+        super().__init__(db)
     
     def create(self, data: Dict[str, Any]) -> VPNConfig:
         config = VPNConfig(
