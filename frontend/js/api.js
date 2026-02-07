@@ -218,13 +218,10 @@ class Api {
 
     static handleLogout() {
         console.log('Logging out due to session expiration');
-        // DEBUG: Confirm logout to see if this is the cause of "vanishing"
-        if (confirm("Debug: Your session has expired (401). Redirect to login?")) {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('user');
-            window.location.hash = '/login';
-        }
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        window.location.hash = '/login';
     }
 }
 

@@ -10,9 +10,10 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
 
-from model.Chat_Model import ChatRequest, ChatSessionResponse, ChatSessionDetail, chat_db
+from model.Chat_Model import ChatRequest, ChatSessionResponse, ChatSessionDetail
 from service.Chat_Service import ChatService
 from database.engine import get_db
+from database.repositories.chat_repository import ChatRepository
 from routers.dependencies import get_current_user
 
 router = APIRouter()
@@ -20,7 +21,7 @@ router = APIRouter()
 
 def get_chat_service(db: Session = Depends(get_db)) -> ChatService:
     """Get ChatService with database session"""
-    return ChatService(db, chat_db)
+    return ChatService(db, ChatRepository(db))
 
 
 # ========================

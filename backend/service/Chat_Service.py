@@ -9,14 +9,15 @@ from typing import AsyncGenerator, Optional, Dict, List
 from datetime import datetime
 from sqlalchemy.orm import Session
 
-from model.Chat_Model import ChatDatabase, ChatSession, ChatMessage
+from model.Chat_Model import ChatSession, ChatMessage
 from database.repositories.activity_repository import ActivityRepository
+from database.repositories.chat_repository import ChatRepository
 
 
 class ChatService:
-    def __init__(self, sql_db: Session, chat_db: ChatDatabase):
-        self.db = chat_db  # In-memory chat storage
-        self.sql_db = sql_db  # SQLAlchemy session for logging
+    def __init__(self, sql_db: Session, chat_repo: ChatRepository):
+        self.db = chat_repo  # SQL chat storage
+        self.sql_db = sql_db  # SQLAlchemy session
         self.activity_repo = ActivityRepository(sql_db)
         self.ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
         self.model = "IHA089/drana-infinity-3b:3b"  # Use available local model

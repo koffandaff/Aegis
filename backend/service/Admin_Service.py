@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 
 from database.repositories.user_repository import UserRepository
 from database.repositories.activity_repository import ActivityRepository
-from model.Chat_Model import chat_db
+from database.repositories.chat_repository import ChatRepository
+from model.Chat_Model import ChatSession, ChatMessage
 
 
 class AdminService:
@@ -20,6 +21,7 @@ class AdminService:
         self.db = db
         self.user_repo = UserRepository(db)
         self.activity_repo = ActivityRepository(db)
+        self.chat_repo = ChatRepository(db)
     
     def get_all_users(self, limit: int = 20, skip: int = 0, 
                       role: Optional[str] = None, 
@@ -141,8 +143,9 @@ class AdminService:
                 total_vpn_configs += user.stats.vpn_configs or 0
                 total_reports += user.stats.reports_generated or 0
         
-        # Get chat stats
-        chat_stats = chat_db.get_global_stats()
+        # Get chat stats directly from SQL
+        total_chat_sessions = self.db.query(ChatSession).count()
+        total_chat_messages = self.db.query(ChatMessage).count()
         
         return {
             'total_users': total_users,
@@ -151,8 +154,8 @@ class AdminService:
             'total_phishing_checks': total_phishing_checks,
             'total_vpn_configs': total_vpn_configs,
             'total_reports': total_reports,
-            'total_chat_sessions': chat_stats.get('total_sessions', 0),
-            'total_chat_messages': chat_stats.get('total_messages', 0)
+            'total_chat_sessions': total_chat_sessions,
+            'total_chat_messages': total_chat_messages
         }
     
     def search_activities(self, user_id: Optional[str] = None, 
