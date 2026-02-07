@@ -314,7 +314,7 @@ class VpnView {
                         const selectedInfo = document.getElementById('selected-info');
                         selectedInfo.innerHTML = `
                             <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">${srv.name}</div>
-                            <div style="font-size: 0.9rem; color: var(--text-muted);">${srv.address} • UDP 1194</div>
+                            <div style="font-size: 0.9rem; color: var(--text-muted);">${Utils.maskIP(srv.address)} • UDP 1194</div>
                         `;
 
                         // Update CLI example filename

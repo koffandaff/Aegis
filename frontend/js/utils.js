@@ -121,6 +121,17 @@ class Utils {
                 }
             }, interval);
         });
+    static maskIP(ip) {
+        if (!ip) return '0.0.0.0';
+        if (ip.includes(':')) { // IPv6
+            const parts = ip.split(':');
+            return `${parts[0]}:****:****:${parts[parts.length - 1]}`;
+        }
+        const parts = ip.split('.');
+        if (parts.length === 4) {
+            return `${parts[0]}.***.***.${parts[3]}`;
+        }
+        return ip;
     }
 }
 
