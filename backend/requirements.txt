@@ -38,6 +38,7 @@ python-magic
 email-validator
 cryptography
 python-nmap
+requests
 # yara-python  # Disabled: requires C compiler on Linux
 
 # Email (for OTP)
