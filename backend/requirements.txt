@@ -20,6 +20,7 @@ passlib
 
 # HTTP Client
 httpx
+requests
 
 # Rate Limiting
 slowapi
@@ -33,6 +34,8 @@ cryptography
 # Network Tools
 dnspython
 python-whois
+python-nmap
+
 
 # File Analysis
 python-magic

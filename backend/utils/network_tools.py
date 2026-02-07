@@ -290,17 +290,23 @@ class NetworkTools:
     # ========== PORT SCANNING ==========
     
     def scan_ports(self, ip: str, ports: List[int] = None) -> Dict:
-        """Scan common ports on an IP"""
+        """Scan common ports on an IP using pure Python sockets (Vercel compatible)"""
         if not ports:
+            # Common top ports
             ports = [21, 22, 23, 25, 53, 80, 110, 143, 443, 465, 
                     587, 993, 995, 3306, 3389, 5432, 8080, 8443]
         
         open_ports = []
         
+        # Simple synchronous scan for now (to avoid async complexity in this sync method)
+        # For production, we'd use asyncio, but this keeps it compatible with current architecture
         for port in ports:
             try:
+                # Create a new socket
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.settimeout(1)
+                sock.settimeout(0.5)  # Fast timeout
+                
+                # Attempt connection
                 result = sock.connect_ex((ip, port))
                 sock.close()
                 
@@ -314,12 +320,9 @@ class NetworkTools:
                         'risk_score': risk_info['score'],
                         'risk_color': risk_info['color']
                     })
-                
-                time.sleep(0.1)  # Rate limiting
-                
             except:
                 continue
-        
+                
         return {
             'ip': ip,
             'open_ports': open_ports,
