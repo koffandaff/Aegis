@@ -45,10 +45,17 @@ class Api {
 
             // Handle Unauthorized (Token Expired)
             if (response.status === 401) {
-                // Prevent infinite loops: if refresh or login fails, logout immediately
-                if (endpoint.includes('/auth/refresh') || endpoint.includes('/auth/login')) {
+                // Prevent infinite loops: if refresh fails, logout immediately
+                if (endpoint.includes('/auth/refresh')) {
                     this.handleLogout();
                     return null;
+                }
+
+                // If login fails (401), it means Invalid Credentials. 
+                // We MUST throw an error so the UI shows the toast.
+                if (endpoint.includes('/auth/login')) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Invalid credentials');
                 }
 
                 try {
