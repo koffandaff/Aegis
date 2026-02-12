@@ -2,3 +2,11 @@ venv/Scripts/activate
 fastapi dev
 python -m http.server 5500
 ollama run Koffan/Cybiz:latest
+
+fastapi dev --host 0.0.0.0
+
+New-NetFirewallRule -DisplayName "Fsociety-BackEnd" -Direction Inbound -LocalPort 8000 -Protocol TCP -Action Allow
+
+sudo python3 setup_vpn_server.py
+
+npx ngrok http 11434 --host-header="localhost:11434"                                                            

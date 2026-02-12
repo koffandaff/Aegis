@@ -9,7 +9,7 @@ if (!API_URL) {
     if (isProduction) {
         API_URL = window.APP_CONFIG?.API_URL || 'https://reconauto-backend.vercel.app/api';
     } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        API_URL = 'http://localhost:8000/api';
+        API_URL = `http://${window.location.hostname}:8000/api`;
     } else {
         // Network access (e.g. 192.168.x.x)
         API_URL = `${window.location.protocol}//${window.location.hostname}:8000/api`;
@@ -53,6 +53,7 @@ class Api {
 
                 try {
                     console.log('Token expired. Attempting refresh...');
+                    console.log(`[API] Attempting refresh on ${API_URL}/auth/refresh`);
                     // Attempt to refresh token
                     // We use fetch directly here to avoid circular dependency on this interceptor, 
                     // though recursion protection above handles it too. 
@@ -130,6 +131,11 @@ class Api {
 
             return data;
         } catch (error) {
+            // Distinguish between network failures (cold start) and actual API errors
+            if (error instanceof TypeError && error.message === 'Failed to fetch') {
+                console.error('[API] Network error — server may be in cold start:', endpoint);
+                throw new Error('Server is waking up from cold start. Please wait 30–60 seconds and try again.');
+            }
             console.group('API Request Failed');
             console.error('Endpoint:', endpoint);
             console.error('Method:', method);

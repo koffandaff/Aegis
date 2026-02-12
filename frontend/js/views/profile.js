@@ -155,6 +155,20 @@ class ProfileView {
                 return;
             }
 
+            // Validate complexity (Upper, Lower, Number) to match backend
+            if (!/[A-Z]/.test(newPassword)) {
+                Utils.showToast('Password must contain at least one uppercase letter', 'error');
+                return;
+            }
+            if (!/[a-z]/.test(newPassword)) {
+                Utils.showToast('Password must contain at least one lowercase letter', 'error');
+                return;
+            }
+            if (!/\d/.test(newPassword)) {
+                Utils.showToast('Password must contain at least one number', 'error');
+                return;
+            }
+
             try {
                 await Api.put('/user/password', {
                     current_password: currentPassword,

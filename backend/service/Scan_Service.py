@@ -94,19 +94,19 @@ class ScanService:
             print(f"[DEBUG] Initiating {scan.scan_type} scan for target: {scan.target} (User: {scan.user_id})")
             
             if scan.scan_type == 'domain':
-                results = network_tools.full_domain_scan(scan.target)
+                results = network_tools.full_domain_scan(scan.target) or {}
             
             elif scan.scan_type == 'whois':
-                results = network_tools.get_whois(scan.target)
+                results = network_tools.get_whois(scan.target) or {}
             
             elif scan.scan_type == 'dns':
-                results = network_tools.get_dns_records(scan.target)
+                results = network_tools.get_dns_records(scan.target) or {}
             
             elif scan.scan_type == 'subdomains':
-                results = network_tools.find_subdomains(scan.target)
+                results = network_tools.find_subdomains(scan.target) or {}
             
             elif scan.scan_type == 'ip':
-                results = network_tools.get_ip_info(scan.target)
+                results = network_tools.get_ip_info(scan.target) or {}
             
             elif scan.scan_type == 'ports':
                 # For domain targets, get IP first
@@ -116,14 +116,14 @@ class ScanService:
                     if dns_results.get('a_records'):
                         target_ip = dns_results['a_records'][0]
                         print(f"[DEBUG] Resolved to {target_ip}. Starting port scan...")
-                        results = network_tools.scan_ports(target_ip)
+                        results = network_tools.scan_ports(target_ip) or {}
                         results['domain'] = scan.target
                     else:
                         print(f"[ERROR] Could not resolve {scan.target}")
                         raise ValueError("Could not resolve domain to IP")
                 else:
                     print(f"[DEBUG] Starting direct IP port scan on {scan.target}")
-                    results = network_tools.scan_ports(scan.target)
+                    results = network_tools.scan_ports(scan.target) or {}
             
             else:
                 print(f"[ERROR] Unsupported scan type: {scan.scan_type}")

@@ -111,7 +111,8 @@ class ScanView {
                                         </div>
                                         <div class="acc-body">
                                             <div id="list-ports" class="port-grid"></div>
-                                            <div id="scan-chart-container" style="display: none; margin-top: 1.5rem; height: 250px; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px;">
+                                            <!-- Chart Container: Relative positioning required for Chart.js responsive mode -->
+                                            <div id="scan-chart-container" style="display: none; margin-top: 1.5rem; position: relative; height: 300px; width: 100%; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px;">
                                                 <canvas id="scan-chart"></canvas>
                                             </div>
                                         </div>
@@ -261,12 +262,12 @@ function populateProfessionalReport(type, results) {
     } else if (type === 'dns') {
         dnsCount = (results.a_records?.length || 0) + (results.mx_records?.length || 0) + (results.ns_records?.length || 0) + (results.txt_records?.length || 0);
     } else if (isFullScan) {
-        openPorts = results.ip_scans?.[0]?.ports?.open_ports?.length || 0;
+        openPorts = (results.ip_scans && results.ip_scans.length > 0) ? (results.ip_scans[0]?.ports?.open_ports?.length || 0) : 0;
         subsCount = results.subdomains?.total_found || 0;
         const dns = results.dns_records || {};
         dnsCount = (dns.a_records?.length || 0) + (dns.mx_records?.length || 0) + (dns.ns_records?.length || 0) + (dns.txt_records?.length || 0);
         // Calculate simple risk score
-        riskScore = Math.min(100, openPorts * 5 + (results.ip_scans?.[0]?.ports?.open_ports?.filter(p => p.risk === 'HIGH')?.length || 0) * 20);
+        riskScore = Math.min(100, openPorts * 5 + ((results.ip_scans && results.ip_scans.length > 0) ? (results.ip_scans[0]?.ports?.open_ports?.filter(p => p.risk === 'HIGH')?.length || 0) : 0) * 20);
     }
 
     document.getElementById('sc-ports').textContent = openPorts;
@@ -305,8 +306,8 @@ function populateProfessionalReport(type, results) {
         ports = results.open_ports || [];
         sections.ports.style.display = 'block';
         sections.ports.classList.add('active');
-    } else if (isFullScan && results.ip_scans) {
-        ports = results.ip_scans[0].ports.open_ports || [];
+    } else if (isFullScan && results.ip_scans && results.ip_scans.length > 0) {
+        ports = results.ip_scans[0]?.ports?.open_ports || [];
     }
 
     portBadge.textContent = `${ports.length} OPEN`;
@@ -327,8 +328,8 @@ function populateProfessionalReport(type, results) {
         geo = results.geolocation;
         sections.geo.style.display = 'block';
         sections.geo.classList.add('active');
-    } else if (isFullScan && results.ip_scans) {
-        geo = results.ip_scans[0].info.geolocation;
+    } else if (isFullScan && results.ip_scans && results.ip_scans.length > 0) {
+        geo = results.ip_scans[0]?.info?.geolocation;
     }
 
     if (geo && !geo.note) {
@@ -557,6 +558,10 @@ function renderUniversalChart(type, results) {
 
     if (showChart) {
         container.style.display = 'block';
+        // Add class to parent to hide port grid on mobile if needed
+        const portList = document.getElementById('list-ports');
+        if (portList) portList.parentElement.classList.add('show-chart-mobile');
+
         window.myScanChart = new Chart(ctx, {
             type: chartType,
             data: chartData,

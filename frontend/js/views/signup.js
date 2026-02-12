@@ -16,6 +16,13 @@ class SignupView {
                             <span class="material-symbols-outlined" style="font-size: 1rem;">arrow_back</span>
                             Back to Home
                         </a>
+
+                        <!-- Cold Start Warning -->
+                        <div id="cold-start-banner" style="background: linear-gradient(135deg, rgba(255,165,0,0.15), rgba(255,165,0,0.05)); border: 1px solid rgba(255,165,0,0.3); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                            <span class="material-symbols-outlined" style="color: #ffa502; font-size: 1.2rem; flex-shrink: 0;">cloud_sync</span>
+                            <span style="font-size: 0.78rem; color: #ccc; line-height: 1.4;">Server may be in <strong style="color: #ffa502;">cold start</strong> mode. First request might take 30–60s. Please be patient.</span>
+                        </div>
+
                         <h2 class="page-title" style="text-align: center; margin-bottom: 0.5rem;">Join Fsociety</h2>
                         <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem; font-size: 0.9rem;">Initialize anonymous connection.</p>
                         
@@ -62,7 +69,9 @@ class SignupView {
                                 </label>
                             </div>
                             
-                            <button type="submit" class="btn" style="width: 100%; padding: 1rem; font-weight: bold; letter-spacing: 2px;">INITIALIZE IDENTITY</button>
+                            <button type="submit" class="btn" id="signup-btn" style="width: 100%; padding: 1rem; font-weight: bold; letter-spacing: 2px; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+                                INITIALIZE IDENTITY
+                            </button>
                         </form>
 
                         <div style="margin-top: 2rem; text-align: center; font-size: 0.9rem;">
@@ -76,6 +85,16 @@ class SignupView {
                 @keyframes rotateGradient {
                     from { transform: rotate(0deg); }
                     to { transform: rotate(360deg); }
+                }
+                @keyframes spinLoader {
+                    to { transform: rotate(360deg); }
+                }
+                .signup-spinner {
+                    width: 18px; height: 18px;
+                    border: 2px solid rgba(0,0,0,0.2);
+                    border-top-color: #000;
+                    border-radius: 50%;
+                    animation: spinLoader 0.6s linear infinite;
                 }
                 .req-item { display: flex; align-items: center; gap: 0.4rem; transition: all 0.3s; opacity: 0.6; }
                 .req-item.valid { color: var(--primary); opacity: 1; }
@@ -99,7 +118,7 @@ class SignupView {
             };
         }
 
-        // Strength checker needs to be global or attached to input
+        // Strength checker
         passwordInput.addEventListener('keyup', () => {
             const password = passwordInput.value;
             const updateReq = (id, valid) => {
@@ -120,6 +139,8 @@ class SignupView {
         });
 
         const form = document.getElementById('signup-form');
+        const signupBtn = document.getElementById('signup-btn');
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -144,11 +165,17 @@ class SignupView {
                 password: password
             };
 
+            // Show loading state
+            signupBtn.disabled = true;
+            signupBtn.innerHTML = '<div class="signup-spinner"></div> CREATING IDENTITY...';
+
             try {
                 await Auth.signup(userData);
                 Utils.showToast('Account Created. Please Login.', 'success');
                 Router.navigate('/login');
             } catch (error) {
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'INITIALIZE IDENTITY';
                 Utils.showToast(error.message, 'error');
             }
         });

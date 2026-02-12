@@ -1,5 +1,6 @@
 import Auth from './auth.js';
 import Components from './components.js';
+import Utils from './utils.js';
 import LandingView from './views/landing.js';
 import LoginView from './views/login.js';
 import SignupView from './views/signup.js';
@@ -121,7 +122,9 @@ class Router {
                 this.app.innerHTML += Components.renderFloatingChat();
             }
 
-            if (route.view.afterRender) {
+            // Verify we are still on the same route before calling afterRender
+            // using a simple check against currentView tracking
+            if (this.currentView === route.view && route.view.afterRender) {
                 await route.view.afterRender();
             }
         } catch (e) {
@@ -138,11 +141,8 @@ class Router {
                     </div>
                 `;
             } else {
-                // If we already have a view, just notify
-                // Dynamic import to avoid circular dependency if Utils isn't globally available, 
-                // but assuming it is or we can get it from somewhere. 
-                // For now, let's use a simple alert fallback or console.
-                alert("Error loading content: " + e.message);
+                // Show error toast instead of alert to prevent null element crashes
+                Utils.showToast('Error loading content: ' + e.message, 'error');
             }
         }
     }

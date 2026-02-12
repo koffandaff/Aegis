@@ -22,6 +22,20 @@
     --font-mono: 'JetBrains Mono', monospace;
 }
 
+/* Global Navbar Styles */
+.app-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    height: 60px;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -381,6 +395,7 @@ input:focus {
         opacity: 1;
     }
 }
+
 /* Tab Buttons for File Analysis */
 .tab-btn {
     background: transparent;
@@ -410,9 +425,9 @@ input:focus {
     width: 200px;
     height: 200px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(0,255,157,0.1) 0%, rgba(0,0,0,0) 70%);
+    background: radial-gradient(circle, rgba(0, 255, 157, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
     border: 3px solid var(--primary);
-    box-shadow: 0 0 30px rgba(0,255,157,0.2), inset 0 0 20px rgba(0,255,157,0.1);
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.2), inset 0 0 20px rgba(0, 255, 157, 0.1);
     color: var(--primary);
     font-size: 1.5rem;
     font-weight: bold;
@@ -427,7 +442,7 @@ input:focus {
 
 .big-connect-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 50px rgba(0,255,157,0.4), inset 0 0 30px rgba(0,255,157,0.2);
+    box-shadow: 0 0 50px rgba(0, 255, 157, 0.4), inset 0 0 30px rgba(0, 255, 157, 0.2);
     text-shadow: 0 0 10px var(--primary);
 }
 
@@ -439,7 +454,7 @@ input:focus {
 .fs-progress-container {
     width: 100%;
     height: 6px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
     overflow: hidden;
     margin-top: 1rem;
@@ -456,7 +471,435 @@ input:focus {
 }
 
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.4); }
-    70% { box-shadow: 0 0 0 20px rgba(0, 255, 157, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0); }
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(0, 255, 157, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 255, 157, 0);
+    }
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+   ========================================= */
+
+/* Sidebar Toggle Buttons (Hidden on Desktop) */
+.hamburger-btn,
+.sidebar-close-btn,
+.sidebar-overlay {
+    display: none;
+}
+
+/* Navbar Brand Text */
+.navbar-brand-text {
+    display: block;
+}
+
+@media (min-width: 769px) {
+    .mobile-only {
+        display: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .mobile-only {
+        display: flex !important;
+    }
+
+    /* --- Layout Adjustments --- */
+    body {
+        font-size: 14px;
+    }
+
+    .container {
+        padding: 1rem 0.5rem;
+        /* Reduce side padding on mobile */
+        width: 100%;
+        overflow-x: hidden;
+        /* Prevent horizontal scroll on body */
+    }
+
+    /* Fixed Sidebar (Off-canvas) */
+    #app-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 260px !important;
+        z-index: 1100;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        background: rgba(15, 15, 19, 0.95) !important;
+        border-right: 1px solid var(--border-color);
+        padding-top: 1rem !important;
+    }
+
+    #app-sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* Overlay */
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(3px);
+        z-index: 1050;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+    }
+
+    .sidebar-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Buttons */
+    .hamburger-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: var(--primary);
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        cursor: pointer;
+        margin-right: 0.5rem;
+    }
+
+    .sidebar-close-row {
+        display: flex;
+        justify-content: flex-end;
+        padding: 0 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .sidebar-close-btn {
+        display: flex;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 0.5rem;
+    }
+
+    /* Navbar */
+    .app-navbar {
+        padding: 0 1rem !important;
+    }
+
+    .navbar-brand-text {
+        font-size: 1rem !important;
+        margin-right: auto;
+        /* Pushes everything else to the right */
+    }
+
+    .app-navbar {
+        justify-content: space-between !important;
+        gap: 0.5rem;
+    }
+
+    .navbar-username {
+        display: none;
+        /* Hide username text on mobile to save space */
+    }
+
+    .navbar-profile-link {
+        padding: 0.25rem !important;
+    }
+
+    /* Navbar Flex Fixes */
+    .app-navbar {
+        display: flex !important;
+        flex-direction: row !important;
+        /* Force row even on mobile */
+        flex-wrap: nowrap !important;
+        /* Prevent wrapping */
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 0.5rem;
+        padding: 0 0.5rem !important;
+        /* Tighter padding */
+        height: 60px;
+    }
+
+    .navbar-actions {
+        display: none !important;
+    }
+
+    /* Global: Force specific control containers to stack vertically */
+    .audit-controls,
+    .vpn-controls,
+    .url-check-box,
+    .footprint-checkbox-group,
+    .file-upload-area,
+    .hash-row,
+    #scan-form>div,
+    #phishing-form>div,
+    #security-form>div {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 1rem !important;
+    }
+
+    /* Ensure inputs/buttons in these stacks take full width */
+    .audit-controls>*,
+    .vpn-controls>*,
+    .url-check-box>*,
+    #scan-form input,
+    #scan-form select,
+    #scan-form button,
+    #phishing-form input,
+    #phishing-form button,
+    #security-form input,
+    #security-form button {
+        width: 100% !important;
+        margin-right: 0 !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* Guest Navbar Fix */
+    .desktop-only {
+        display: none !important;
+    }
+
+    /* Main Content Area */
+    #app>div:nth-child(2) {
+        /* The flex container below navbar */
+        padding-top: 60px !important;
+    }
+
+    #app>div:nth-child(2)>div:nth-child(2) {
+        /* The main content div */
+        padding: 1rem !important;
+    }
+
+    /* Dashboard/Admin/File Grid & Phishing/Security Forms */
+    .container>div[style*="grid-template-columns"],
+    div[style*="grid-template-columns"],
+    #phishing-form,
+    #security-form {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    /* System Metrics Specific Fix */
+    .system-metrics {
+        display: grid;
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+
+    /* Fix stats container breaking */
+    .stats-container {
+        flex-direction: column;
+    }
+
+    /* Scan Results / Grids */
+    .grid-list {
+        grid-template-columns: 1fr;
+    }
+
+    .port-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    /* Typography & Spacing */
+    h1 {
+        font-size: 1.5rem !important;
+    }
+
+    h2 {
+        font-size: 1.3rem !important;
+    }
+
+    h3 {
+        font-size: 1.1rem !important;
+    }
+
+    /* Tables/Pre tags - Fix horizontal scrolling */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    pre {
+        font-size: 0.75rem;
+        overflow-x: auto;
+        padding: 0.5rem;
+        white-space: pre-wrap;
+        /* Wrap long lines in code blocks */
+        word-break: break-all;
+    }
+
+    /* Login/Signup Cards */
+    .card.glass.fade-in {
+        padding: 2rem 1.5rem !important;
+        width: 100% !important;
+    }
+
+    /* Chat View Specifics */
+    .chat-container {
+        flex-direction: column;
+        position: relative;
+    }
+
+    .chat-sidebar {
+        display: none !important;
+    }
+
+    .chat-sidebar.show-mobile {
+        display: flex !important;
+        position: fixed;
+        /* Changed from absolute to fixed for better stability */
+        top: 60px;
+        left: 0;
+        width: 100% !important;
+        height: calc(100vh - 60px) !important;
+        background: #0f0f13 !important;
+        background: #0f0f13 !important;
+        z-index: 900;
+        /* Below Navbar (1000) but above content */
+        animation: slideInLeft 0.3s ease;
+    }
+
+    @keyframes slideInLeft {
+        from {
+            transform: translateX(-100%);
+        }
+
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    .chat-main {
+        height: calc(100vh - 60px) !important;
+    }
+
+    /* GPT-Style Input Area (Mobile adjustment) */
+    .chat-input-container {
+        padding: 0.5rem !important;
+    }
+
+    #chat-form {
+        max-width: 100% !important;
+    }
+
+    /* Toast Position */
+    #toast-container {
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+        width: auto;
+    }
+
+    /* --- View Specific Mobile Fixes --- */
+
+    /* Digital Footprint */
+    #footprint-form {
+        grid-template-columns: 1fr !important;
+    }
+
+    .footprint-checkbox-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    /* Network Scan Results */
+    .scan-result-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Security Audit */
+    .audit-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .audit-controls select,
+    .audit-controls input,
+    .audit-controls button {
+        width: 100% !important;
+    }
+
+    /* Phishing Detector */
+    .phishing-container {
+        padding: 0 !important;
+    }
+
+    .url-check-box {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .url-check-box input,
+    .url-check-box button {
+        width: 100%;
+        border-radius: 6px !important;
+    }
+
+    /* File Analysis */
+    .file-upload-area {
+        padding: 1rem !important;
+    }
+
+    .hash-row {
+        flex-direction: column;
+    }
+
+    .hash-row input {
+        border-radius: 6px !important;
+        margin-bottom: 0.5rem;
+    }
+
+    /* VPN View */
+    .vpn-server-list {
+        grid-template-columns: 1fr !important;
+    }
+
+    .vpn-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .vpn-connect-btn {
+        width: 100% !important;
+    }
+
+    /* Settings / Profile */
+    .profile-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .settings-form .form-group {
+        margin-bottom: 1rem;
+    }
+
+    /* Admin User Row - Mobile Stack */
+    .user-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+
+    .user-row>div {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
 }

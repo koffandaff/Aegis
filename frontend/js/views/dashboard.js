@@ -69,7 +69,7 @@ class DashboardView {
                         <!-- System Stats / Quick Info -->
                         <div class="card glass" style="padding: 1.5rem; margin-bottom: 2rem;">
                             <h3 style="margin-bottom: 1rem;">System Metrics</h3>
-                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                            <div class="system-metrics" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
                                 <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
                                     <div style="font-size: 2rem; font-weight: bold; color: var(--primary);">ACTIVE</div>
                                     <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Protection Status</div>

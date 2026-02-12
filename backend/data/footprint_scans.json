@@ -496,6 +496,57 @@
       "started_at": "2026-02-03 05:24:33.483961",
       "completed_at": "2026-02-03T05:24:34.881296",
       "error_message": null
+    },
+    {
+      "id": "61663007-5468-4f12-9552-4012c60ff754",
+      "user_id": "c95e88e4-a86b-4ae6-9ae2-884e7d008e4f",
+      "email_scanned": "asddasdas@gmai.com",
+      "username_scanned": "koffandaff",
+      "phone_scanned": null,
+      "platforms_checked": [],
+      "score": 89,
+      "findings": [
+        {
+          "id": "111bd33e",
+          "category": "email_exposure",
+          "source": "Spotify",
+          "severity": "low",
+          "title": "Email registered on Spotify",
+          "description": "Your email address appears to be registered on Spotify.",
+          "url": null,
+          "found_at": "2026-02-12 12:52:24.394124+00:00"
+        },
+        {
+          "id": "5d76e24c",
+          "category": "email_exposure",
+          "source": "Pinterest",
+          "severity": "low",
+          "title": "Email registered on Pinterest",
+          "description": "Your email address appears to be registered on Pinterest.",
+          "url": null,
+          "found_at": "2026-02-12 12:52:24.394149+00:00"
+        },
+        {
+          "id": "a8eb2960",
+          "category": "email_exposure",
+          "source": "Discord",
+          "severity": "medium",
+          "title": "Email registered on Discord",
+          "description": "Your email address appears to be registered on Discord.",
+          "url": null,
+          "found_at": "2026-02-12 12:52:24.394164+00:00"
+        }
+      ],
+      "recommendations": [
+        "\u2705 Your digital footprint is relatively secure. Keep monitoring regularly.",
+        "\ud83d\udd0d Enable two-factor authentication on all important accounts.",
+        "\ud83d\uddd1\ufe0f Delete accounts you no longer use to reduce your attack surface."
+      ],
+      "status": "completed",
+      "progress": 100,
+      "started_at": "2026-02-12 12:52:22.589122+00:00",
+      "completed_at": "2026-02-12T12:52:24.467235+00:00",
+      "error_message": null
     }
   ]
 }

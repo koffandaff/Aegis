@@ -15,13 +15,21 @@ class ChatView {
     async render() {
         return `
             ${Components.renderNavbar()}
-            <div style="display: flex; height: 100vh; padding-top: 60px;">
+            <div class="chat-container" style="display: flex; height: 100vh; padding-top: 60px;">
                 <!-- Sidebar: Session List -->
-                <div id="chat-sidebar" style="width: 280px; background: rgba(0,0,0,0.4); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden;">
+                <div id="chat-sidebar" class="chat-sidebar glass" style="width: 280px; background: rgba(0,0,0,0.4); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden;">
+                    <!-- Sidebar Header (Mobile Only) -->
+                    <div class="sidebar-header mobile-only" style="padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span style="font-weight: bold; color: var(--text-main);">Chats</span>
+                        <button id="close-sidebar-btn" class="btn-outline btn-sm" style="border: none; color: var(--text-muted);">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
                     <!-- New Chat Button -->
                     <div style="padding: 1rem;">
                         <button id="new-chat-btn" class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                            <i class="material-symbols-outlined" style="font-size: 1.2rem;">add</i>
+                            <span class="material-symbols-outlined">add</span>
                             NEW CHAT
                         </button>
                     </div>
@@ -41,25 +49,30 @@ class ChatView {
                 </div>
                 
                 <!-- Main Chat Area -->
-                <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                <div class="chat-main" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
                     <!-- Chat Header -->
                     <div id="chat-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
                         <div style="display: flex; align-items: center; gap: 1rem;">
+                            <!-- Mobile Session Toggle -->
+                            <button id="mobile-sessions-btn" class="btn-outline btn-sm mobile-only" style="padding: 0.5rem; border: none; color: var(--primary);">
+                                <span class="material-symbols-outlined">menu_open</span>
+                            </button>
+
                             <a href="#/dashboard" class="btn-outline btn-sm" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; border: none; color: var(--text-muted);" title="Go to Dashboard">
-                                <i class="material-symbols-outlined" style="font-size: 1.5rem;">home</i>
+                                <span class="material-symbols-outlined" style="font-size: 1.5rem;">home</span>
                             </a>
                             <div>
                                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                                     <h2 id="chat-title" style="margin: 0; font-size: 1.1rem; color: var(--text);">AI Assistant</h2>
                                     <button id="edit-title-btn" class="btn-outline btn-sm" style="padding: 2px; border: none; color: var(--text-muted); display: none;" title="Edit Title">
-                                        <i class="material-symbols-outlined" style="font-size: 1rem;">edit</i>
+                                        <span class="material-symbols-outlined" style="font-size: 1rem;">edit</span>
                                     </button>
                                 </div>
                                 <div id="chat-subtitle" style="font-size: 0.75rem; color: var(--text-muted);">Powered by Koffan/Cybiz</div>
                             </div>
                         </div>
                         <button id="delete-session-btn" class="btn-outline btn-sm" style="display: none;">
-                            <i class="material-symbols-outlined" style="font-size: 1rem;">delete</i>
+                            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
                         </button>
                     </div>
 
@@ -69,24 +82,29 @@ class ChatView {
                         <div id="messages-list" style="max-width: 800px; margin: 0 auto;">
                             <!-- Welcome message when empty -->
                             <div id="welcome-message" style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                                <i class="material-symbols-outlined" style="font-size: 4rem; color: var(--primary); opacity: 0.5;">smart_toy</i>
+                                <span class="material-symbols-outlined" style="font-size: 4rem; color: var(--primary); opacity: 0.5;">smart_toy</span>
                                 <h3 style="margin-top: 1rem; color: var(--text);">Welcome to Cybiz AI</h3>
                                 <p style="font-size: 0.9rem;">Start a conversation or select a previous chat from the sidebar.</p>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Input Area -->
-                    <div style="padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2);">
-                        <form id="chat-form" style="max-width: 800px; margin: 0 auto; display: flex; gap: 0.8rem; align-items: flex-end;">
-                            <textarea id="message-input" placeholder="Type your message..." style="flex: 1; background: rgba(0, 20, 10, 0.6); border: 1px solid var(--primary); border-radius: 8px; padding: 0.8rem; color: var(--primary); resize: none; font-family: 'JetBrains Mono', monospace; line-height: 1.5; min-height: 48px; max-height: 150px; caret-color: var(--primary);" rows="1"></textarea>
-                            <button type="submit" id="send-btn" class="btn" style="padding: 0.8rem 1.5rem; height: 48px;">
-                                <i class="material-symbols-outlined" style="font-size: 1.2rem;">send</i>
-                            </button>
-                            <button type="button" id="stop-btn" class="btn" style="padding: 0.8rem 1.5rem; display: none; background: #ff4757; height: 48px;">
-                                <i class="material-symbols-outlined" style="font-size: 1.2rem;">stop</i>
-                            </button>
+                    <!-- Input Area (GPT Style) -->
+                    <div class="chat-input-container" style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); background: var(--bg-dark);">
+                        <form id="chat-form" style="max-width: 800px; margin: 0 auto; display: flex; gap: 0.8rem; align-items: flex-end; position: relative;">
+                            <div style="flex: 1; position: relative; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem; transition: border-color 0.3s; display: flex; align-items: flex-end;">
+                                <textarea id="message-input" placeholder="Message Cybiz AI..." style="width: 100%; background: transparent; border: none; padding: 0.8rem; color: var(--text-main); resize: none; font-family: 'Inter', sans-serif; font-size: 0.95rem; line-height: 1.5; max-height: 200px; min-height: 24px; height: 24px; overflow-y: hidden;"></textarea>
+                                <button type="submit" id="send-btn" class="btn" style="min-width: 32px; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 4px; margin-right: 4px; background: var(--primary); color: #000;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">arrow_upward</span>
+                                </button>
+                                <button type="button" id="stop-btn" class="btn" style="display: none; min-width: 32px; width: 32px; height: 32px; padding: 0; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 4px; margin-right: 4px; background: var(--text-main); color: #000;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">stop</span>
+                                </button>
+                            </div>
                         </form>
+                         <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.8rem; opacity: 0.7;">
+                            Cybiz AI can make mistakes. Verify important information.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,41 +112,67 @@ class ChatView {
     }
 
     async afterRender() {
-        document.getElementById('logout-btn').addEventListener('click', () => Auth.logout());
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) logoutBtn.addEventListener('click', () => Auth.logout());
 
         // Load sessions and check Ollama
         await this.loadSessions();
         await this.checkOllamaStatus();
 
+        // Check if view is still active (simple check)
+        if (!document.getElementById('new-chat-btn')) return;
+
+        // Mobile Sidebar Close
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        if (closeSidebarBtn) {
+            closeSidebarBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent bubbling
+                document.getElementById('chat-sidebar').classList.remove('show-mobile');
+            });
+        }
+
         // Event Listeners
-        document.getElementById('new-chat-btn').addEventListener('click', () => this.createNewChat());
+        const newChatBtn = document.getElementById('new-chat-btn');
+        if (newChatBtn) newChatBtn.addEventListener('click', () => {
+            this.createNewChat();
+            if (window.innerWidth <= 768) {
+                document.getElementById('chat-sidebar').classList.remove('show-mobile');
+            }
+        });
 
         const form = document.getElementById('chat-form');
         const input = document.getElementById('message-input');
 
-        // Handle form submit (click)
-        form.addEventListener('submit', (e) => this.handleSendMessage(e));
+        if (form && input) {
+            // Handle form submit (click)
+            form.addEventListener('submit', (e) => this.handleSendMessage(e));
 
-        // Handle Enter/Shift+Enter
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                // Dispatch submit event to handle sending
-                const submitEvent = new Event('submit', { cancelable: true });
-                form.dispatchEvent(submitEvent);
-            }
-        });
+            // Handle Enter/Shift+Enter
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    // Dispatch submit event to handle sending
+                    const submitEvent = new Event('submit', { cancelable: true });
+                    form.dispatchEvent(submitEvent);
+                }
+            });
 
-        // Auto-resize textarea
-        input.addEventListener('input', function () {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-            if (this.value === '') this.style.height = '48px';
-        });
+            // Auto-resize textarea
+            input.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                if (this.value === '') this.style.height = '48px';
+            });
+        }
 
-        document.getElementById('delete-session-btn').addEventListener('click', () => this.deleteCurrentSession());
-        document.getElementById('edit-title-btn').addEventListener('click', () => this.editTitle());
-        document.getElementById('stop-btn').addEventListener('click', () => this.stopStreaming());
+        const deleteBtn = document.getElementById('delete-session-btn');
+        if (deleteBtn) deleteBtn.addEventListener('click', () => this.deleteCurrentSession());
+
+        const editBtn = document.getElementById('edit-title-btn');
+        if (editBtn) editBtn.addEventListener('click', () => this.editTitle());
+
+        const stopBtn = document.getElementById('stop-btn');
+        if (stopBtn) stopBtn.addEventListener('click', () => this.stopStreaming());
     }
 
     async loadSessions() {
@@ -177,6 +221,11 @@ class ChatView {
                 if (e.target.closest('.delete-session-item')) return;
                 const sessionId = item.dataset.sessionId;
                 this.loadSession(sessionId);
+
+                // Absolute Fix: Auto-close sidebar on mobile ONLY (< 768px)
+                if (window.innerWidth <= 768) {
+                    document.getElementById('chat-sidebar').classList.remove('show-mobile');
+                }
             });
         });
 
@@ -188,6 +237,66 @@ class ChatView {
                 this.showDeleteModal(sessionId);
             });
         });
+    }
+
+    async afterRender() {
+        const input = document.getElementById('message-input');
+        const form = document.getElementById('chat-form');
+
+        if (input && form) {
+            form.addEventListener('submit', (e) => this.handleSendMessage(e));
+
+            // Handle Enter/Shift+Enter
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    // Dispatch submit event to handle sending
+                    const submitEvent = new Event('submit', { cancelable: true });
+                    form.dispatchEvent(submitEvent);
+                }
+            });
+
+            // Auto-resize textarea
+            input.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                if (this.value === '') this.style.height = '48px';
+            });
+        }
+
+        const deleteBtn = document.getElementById('delete-session-btn');
+        if (deleteBtn) deleteBtn.addEventListener('click', () => this.deleteCurrentSession());
+
+        const editBtn = document.getElementById('edit-title-btn');
+        if (editBtn) editBtn.addEventListener('click', () => this.editTitle());
+
+        const stopBtn = document.getElementById('stop-btn');
+        if (stopBtn) stopBtn.addEventListener('click', () => this.stopStreaming());
+
+        // Sidebar Toggle Handlers (Moved here for reliability)
+        // We use a small timeout to ensure DOM is fully ready if rendering happens fast
+        setTimeout(() => {
+            const closeBtn = document.getElementById('close-sidebar-btn');
+            if (closeBtn) {
+                // Remove old listeners to be safe (though usually fresh DOM)
+                closeBtn.onclick = null;
+                closeBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    document.getElementById('chat-sidebar').classList.remove('show-mobile');
+                };
+            }
+
+            const mobileToggle = document.getElementById('mobile-sessions-btn');
+            if (mobileToggle) {
+                mobileToggle.onclick = null;
+                mobileToggle.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    document.getElementById('chat-sidebar').classList.add('show-mobile');
+                };
+            }
+        }, 100);
     }
 
     async loadSession(sessionId) {
