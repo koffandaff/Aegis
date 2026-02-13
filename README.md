@@ -148,7 +148,7 @@ The platform features:
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/fsociety.git
+   git clone https://github.com/koffandaff/Aegis.git
    cd fsociety
    ```
 2. **Create and activate virtual environment**
