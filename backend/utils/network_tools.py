@@ -472,6 +472,7 @@ class NetworkTools:
         }
         
         # Run all scans
+        print(f"[DEBUG] Starting full domain scan for {domain} (v2)")
         results['dns_records'] = self.get_dns_records(domain)
         results['whois'] = self.get_whois(domain)
         results['subdomains'] = self.find_subdomains(domain)
