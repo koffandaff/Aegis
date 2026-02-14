@@ -11,6 +11,7 @@ import json
 import io
 import contextlib
 import sys
+import logging
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timezone
 
@@ -104,22 +105,47 @@ class NetworkTools:
             if not lookup_func:
                 return {'error': 'WHOIS module found but incompatible API. Try: pip install python-whois'}
 
-            # Perform the lookup with stderr suppression (as it prints socket errors)
+            # Perform the lookup with logging suppression (library logs to stderr)
             w = None
+            
+            # Suppress python-whois logging which prints "Error trying to connect..."
+            # The library uses logging.getLogger(__name__) so we target 'whois'
+            whois_logger = logging.getLogger('whois')
+            original_level = whois_logger.level
+            whois_logger.setLevel(logging.CRITICAL)
+            
             try:
-                # Capture stderr to suppress "Error trying to connect to socket" messages
+                # Capture stderr just in case (for non-logging prints)
                 f = io.StringIO()
                 with contextlib.redirect_stderr(f):
                     w = lookup_func(domain)
             except Exception as e:
-                # Specific handling for .app domains which often fail in python-whois
+                # If explicit exception raised
                 if domain.endswith('.app'):
-                    print(f"[DEBUG] .app domain lookup failed, attempting direct query to whois.nic.google...")
+                    print(f"[DEBUG] .app domain lookup failed (exception), attempting direct query...")
+                    whois_logger.setLevel(original_level) # Restore before return
                     return self._get_whois_raw_socket(domain, "whois.nic.google")
 
-                # Fallback to CLI if Python module fails
                 print(f"[DEBUG] python-whois failed ({str(e)}), trying CLI fallback...")
+                whois_logger.setLevel(original_level)
                 return self._get_whois_via_cli(domain)
+            finally:
+                whois_logger.setLevel(original_level)
+            
+            # Quality check: python-whois might return success but with empty/error data or swallow exceptions
+            # For .app domains, this often manifests as "Socket not responding" text or empty result
+            is_valid_result = False
+            if w:
+                 # Check if it looks like a valid object (has registrar or creation date)
+                 if hasattr(w, 'registrar') and w.registrar:
+                     is_valid_result = True
+                 elif hasattr(w, 'creation_date') and w.creation_date:
+                     is_valid_result = True
+            
+            # If result is suspicious/invalid and it's an .app domain, force fallback
+            if not is_valid_result and domain.endswith('.app'):
+                 print(f"[DEBUG] .app domain lookup returned invalid data, attempting direct query...")
+                 return self._get_whois_raw_socket(domain, "whois.nic.google")
             
             # Convert whois object to dict
             whois_dict = {}
@@ -472,7 +498,6 @@ class NetworkTools:
         }
         
         # Run all scans
-        print(f"[DEBUG] Starting full domain scan for {domain} (v2)")
         results['dns_records'] = self.get_dns_records(domain)
         results['whois'] = self.get_whois(domain)
         results['subdomains'] = self.find_subdomains(domain)
