@@ -8,6 +8,9 @@ import re
 import time
 import subprocess
 import json
+import io
+import contextlib
+import sys
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timezone
 
@@ -101,8 +104,22 @@ class NetworkTools:
             if not lookup_func:
                 return {'error': 'WHOIS module found but incompatible API. Try: pip install python-whois'}
 
-            # Perform the lookup
-            w = lookup_func(domain)
+            # Perform the lookup with stderr suppression (as it prints socket errors)
+            w = None
+            try:
+                # Capture stderr to suppress "Error trying to connect to socket" messages
+                f = io.StringIO()
+                with contextlib.redirect_stderr(f):
+                    w = lookup_func(domain)
+            except Exception as e:
+                # Specific handling for .app domains which often fail in python-whois
+                if domain.endswith('.app'):
+                    print(f"[DEBUG] .app domain lookup failed, attempting direct query to whois.nic.google...")
+                    return self._get_whois_raw_socket(domain, "whois.nic.google")
+
+                # Fallback to CLI if Python module fails
+                print(f"[DEBUG] python-whois failed ({str(e)}), trying CLI fallback...")
+                return self._get_whois_via_cli(domain)
             
             # Convert whois object to dict
             whois_dict = {}
@@ -137,11 +154,32 @@ class NetworkTools:
             # Alternative: Use whois command line if available
             return self._get_whois_via_cli(domain)
         except Exception as e:
-            import traceback
-            error_trace = traceback.format_exc()
-            print(f"[ERROR] WHOIS failed for {domain}: {str(e)}\n{error_trace}")
-            return {'error': f'WHOIS lookup failed (internal error). Please contact administrator.'}
+            # import traceback
+            # error_trace = traceback.format_exc()
+            print(f"[ERROR] WHOIS failed for {domain}: {str(e)}")
+            return {'error': f'WHOIS lookup failed (internal error).'}
     
+    def _get_whois_raw_socket(self, domain: str, server: str) -> Dict:
+        """Query WHOIS server directly via socket"""
+        try:
+            with socket.create_connection((server, 43), timeout=10) as s:
+                s.sendall(f"{domain}\r\n".encode())
+                response = b""
+                while True:
+                    data = s.recv(4096)
+                    if not data:
+                        break
+                    response += data
+            
+            # Return raw data structure
+            return {
+                'raw_whois': response.decode('utf-8', errors='ignore'),
+                'note': f'Raw WHOIS data from {server} (parsing unavailable)',
+                'domain_name': domain
+            }
+        except Exception as e:
+             return {'error': f'Direct WHOIS query failed: {str(e)}'}
+
     def _get_whois_via_cli(self, domain: str) -> Dict:
         """Fallback: Use system whois command"""
         try:
@@ -296,7 +334,11 @@ class NetworkTools:
             return self._scan_ports_nmap(ip, ports)
         except Exception as e:
             # Fallback to sockets if nmap is missing or fails (common on Vercel)
-            print(f"[SCAN] Nmap unavailable ({str(e)}), using socket fallback.")
+            err_str = str(e)
+            if "No module named" in err_str or "not found in path" in err_str:
+                 print(f"[SCAN] Nmap unavailable (Platform limitation), using socket fallback.")
+            else:
+                 print(f"[SCAN] Nmap unavailable ({str(e)}), using socket fallback.")
             return self._scan_ports_socket(ip, ports)
 
     def _scan_ports_nmap(self, ip: str, ports: List[int] = None) -> Dict:
