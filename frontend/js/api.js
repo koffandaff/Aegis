@@ -41,9 +41,9 @@ class Api {
         }
 
         try {
-            // Add 15s timeout to prevent hanging
+            // Add 60s timeout to prevent hanging on long scans
             const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 15000);
+            const id = setTimeout(() => controller.abort(), 60000);
             config.signal = controller.signal;
 
             const response = await fetch(`${API_URL}${endpoint}`, config);
