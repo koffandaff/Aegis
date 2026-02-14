@@ -197,12 +197,40 @@ class NetworkTools:
                         break
                     response += data
             
-            # Return raw data structure
-            return {
-                'raw_whois': response.decode('utf-8', errors='ignore'),
-                'note': f'Raw WHOIS data from {server} (parsing unavailable)',
-                'domain_name': domain
+            # Parse basic fields using regex
+            raw_text = response.decode('utf-8', errors='ignore')
+            result = {
+                'raw_whois': raw_text,
+                'note': f'Raw WHOIS data from {server}',
+                'domain_name': domain,
+                # Default values
+                'registrar': 'Unknown (Raw)',
+                'creation_date': 'Unknown',
+                'expiration_date': 'Unknown',
+                'emails': []
             }
+            
+            # Simple regex patterns for common WHOIS formats
+            patterns = {
+                'registrar': r'Registrar:\s*(.*)',
+                'creation_date': r'Creation Date:\s*(.*)|Registered on:\s*(.*)',
+                'expiration_date': r'Registry Expiry Date:\s*(.*)|Expiry Date:\s*(.*)|Expires on:\s*(.*)',
+                'emails': r':\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
+            }
+            
+            for key, pattern in patterns.items():
+                matches = re.findall(pattern, raw_text, re.IGNORECASE)
+                if matches:
+                    if key == 'emails':
+                        result[key] = list(set(matches))  # Unique emails
+                    else:
+                        # Handle potential groups from alternatives
+                        val = matches[0]
+                        if isinstance(val, tuple):
+                            val = next((x for x in val if x), 'Unknown')
+                        result[key] = val.strip()
+            
+            return result
         except Exception as e:
              return {'error': f'Direct WHOIS query failed: {str(e)}'}
 
