@@ -202,19 +202,33 @@ class ScanView {
                         Utils.showToast(`Resolved IP: ${results.dns_records.a_records[0]}`, 'info');
                     }
 
-                    // Populate Summary & JSON
-                    document.getElementById('analysis-summary').innerHTML = Utils.renderMarkdown(results.analysis_summary || "No summary available.");
-                    jsonOutput.innerHTML = Utils.formatJSON(response);
+                    // Debugging Frontend Data
+                    console.log('Scan Results received:', results);
 
-                    // Populate Professional Accordion Sections
-                    populateProfessionalReport(type, results);
+                    try {
+                        // Populate Summary & JSON
+                        if (Utils.renderMarkdown) {
+                            document.getElementById('analysis-summary').innerHTML = Utils.renderMarkdown(results.analysis_summary || "No summary available.");
+                        } else {
+                            document.getElementById('analysis-summary').textContent = results.analysis_summary || "No summary available.";
+                        }
 
-                    resultsArea.style.display = 'block';
+                        jsonOutput.innerHTML = Utils.formatJSON(response);
 
-                    // Chart Logic
-                    renderUniversalChart(type, results);
+                        // Populate Professional Accordion Sections
+                        populateProfessionalReport(type, results);
 
-                    Utils.showToast('OSINT Aggregation Success', 'success');
+                        resultsArea.style.display = 'block';
+
+                        // Chart Logic
+                        renderUniversalChart(type, results);
+
+                        Utils.showToast('OSINT Aggregation Success', 'success');
+                    } catch (renderError) {
+                        console.error('Rendering failed:', renderError);
+                        alert(`Rendering Error: ${renderError.message}\nCheck console for details.`);
+                        Utils.showToast(`Rendering Error: ${renderError.message}`, 'error');
+                    }
                 }
             } catch (error) {
                 Utils.showToast(error.message, 'error');

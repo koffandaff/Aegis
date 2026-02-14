@@ -1,0 +1,63 @@
+{
+  "domain": "drivegate.app",
+  "timestamp": "2026-02-14T17:06:17.168066+00:00",
+  "scan_type": "full",
+  "dns_records": {
+    "a_records": [
+      "216.198.79.1"
+    ],
+    "aaaa_records": [],
+    "mx_records": [
+      "route1.mx.cloudflare.net.",
+      "route2.mx.cloudflare.net.",
+      "route3.mx.cloudflare.net."
+    ],
+    "ns_records": [],
+    "txt_records": [
+      "google-site-verification=SHGj7tfgxSiVpuPp2YFyR2Wx0fFgIf_bAmGOqWvlJpM",
+      "v=spf1 include:_spf.mx.cloudflare.net ~all"
+    ],
+    "cname_records": [],
+    "soa_record": "carol.ns.cloudflare.com. dns.cloudflare.com. 2396406683 10000 2400 604800 1800"
+  },
+  "whois": {
+    "error": "Direct WHOIS query failed: [Errno 11001] getaddrinfo failed"
+  },
+  "subdomains": {
+    "domain": "drivegate.app",
+    "subdomains_found": [
+      "www.drivegate.app",
+      "api.drivegate.app"
+    ],
+    "total_found": 2
+  },
+  "ip_scans": [
+    {
+      "ip": "216.198.79.1",
+      "info": {
+        "ip": "216.198.79.1",
+        "hostname": null,
+        "geolocation": {
+          "country": "United States",
+          "region": "Georgia",
+          "city": "Atlanta",
+          "isp": "Network Billing Systems",
+          "org": "Lefkoff Industries",
+          "lat": 33.8541,
+          "lon": -84.3791,
+          "as": "AS16509 Amazon.com, Inc."
+        },
+        "service": null,
+        "timestamp": "2026-02-14T17:07:27.024227+00:00"
+      },
+      "ports": {
+        "ip": "216.198.79.1",
+        "open_ports": [],
+        "total_scanned": 15,
+        "total_open": 0,
+        "method": "socket"
+      }
+    }
+  ],
+  "analysis_summary": "### Executive Summary (Threat Report)\n- **Infrastructure Reliability**: Resolved to `216.198.79.1`. High availability cluster detected.\n- **Mail Security**: 3 MX nodes found. Check SPF/DKIM for spoofing protection.\n- **Service Exposure**: OSINT indicates 0 open listener(s). - **Asset Tracking**: 2 endpoints mapped in the current session.\n\n**Overall Risk Level**: LOW (OSINT visibility)"
+}
