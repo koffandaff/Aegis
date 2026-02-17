@@ -149,7 +149,7 @@ The platform features:
 
    ```bash
    git clone https://github.com/koffandaff/Aegis.git
-   cd fsociety
+   cd Aegis
    ```
 2. **Create and activate virtual environment**
 
@@ -404,7 +404,7 @@ docs/
 | :------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------: |
 |                                **Dhruvil Adroja**                                |                                  **Vraj Patel**                                  |                                 **Krisha Patel**                                 |
 |                               Lead Full Stack Developer                               |                                  Full Stack Developer                                  |                                  Full Stack Developer                                  |
-|                             Linux & Recon Engine Architect                             |                                 Backend Infrastructure                                 |                                 UI/UX & Visualizations                                 |
+|                             Linux & Recon Engine Architect                             |                                 UI/UX & Visualizations                                 |                                  Backend Infrastructure                                |
 
 </div>
 
