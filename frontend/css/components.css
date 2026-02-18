@@ -1,7 +1,7 @@
-/* Fsociety Components CSS */
+/* Aegis Components CSS */
 
 /* Progress Bar */
-.fs-progress-container {
+.aegis-progress-container {
     width: 100%;
     height: 4px;
     background: rgba(255, 255, 255, 0.1);
@@ -10,7 +10,7 @@
     margin: 1rem 0;
 }
 
-.fs-progress-bar {
+.aegis-progress-bar {
     height: 100%;
     width: 0%;
     background: linear-gradient(90deg, var(--primary), var(--secondary));

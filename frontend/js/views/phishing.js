@@ -19,7 +19,7 @@ class PhishingView {
                         <form id="phishing-form">
                             <div>
                                 <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.8rem;">TARGET URL</label>
-                                <input type="text" id="phishing-target" required placeholder="https://fsociety.login-safe.com" 
+                                <input type="text" id="phishing-target" required placeholder="https://aegis.login-safe.com" 
                                     style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; font-family: 'JetBrains Mono';">
                             </div>
                             <button type="submit" class="btn" id="phish-btn" style="height: 42px;">ANALYZE</button>
@@ -157,10 +157,10 @@ class PhishingView {
                     pdf.setPage(i);
                     pdf.setFontSize(8);
                     pdf.setTextColor(100, 100, 100);
-                    pdf.text(`Page ${i} of ${totalPages} | Fsociety Phishing Analysis`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+                    pdf.text(`Page ${i} of ${totalPages} | Aegis Phishing Analysis`, pageWidth / 2, pageHeight - 5, { align: 'center' });
                 }
 
-                pdf.save(`fsociety_phishing_report_${Date.now()}.pdf`);
+                pdf.save(`aegis_phishing_report_${Date.now()}.pdf`);
                 Utils.showToast('Report Exported Successfully', 'success');
             } catch (e) {
                 console.error('PDF Export Error:', e);

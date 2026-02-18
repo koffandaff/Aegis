@@ -982,7 +982,7 @@ class AdminView {
         doc.setFont("courier", "bold");
         doc.setFontSize(28);
         doc.setTextColor(0, 255, 157); // fsociety green
-        doc.text("FSOCIETY", 14, 25);
+        doc.text("AEGIS", 14, 25);
 
         doc.setFontSize(10);
         doc.setTextColor(52, 152, 219); // secondary blue
@@ -1022,7 +1022,7 @@ class AdminView {
             }
         });
 
-        doc.save(`fsociety_users_manifest_${new Date().getTime()}.pdf`);
+        doc.save(`aegis_users_manifest_${new Date().getTime()}.pdf`);
         Utils.showToast("Secure PDF Manifest Exported", "success");
     }
 
@@ -1073,7 +1073,7 @@ class AdminView {
         doc.setTextColor(150, 150, 150);
         doc.text(`QUERY_HASH: ${Utils.generateId().toUpperCase()}`, 14, 28);
         doc.text(`TIMESTAMP: ${new Date().toISOString()}`, 14, 33);
-        doc.text(`ORIGIN: FSOCIETY_SQL_CONSOLE | FORMAT: ${format.toUpperCase()}`, 14, 38);
+        doc.text(`ORIGIN: AEGIS_SQL_CONSOLE | FORMAT: ${format.toUpperCase()}`, 14, 38);
 
         doc.autoTable({
             startY: 45,
@@ -1117,7 +1117,7 @@ class AdminView {
             doc.setPage(i);
             doc.setFontSize(8);
             doc.setTextColor(100);
-            doc.text(`Page ${i} of ${pageCount} | Fsociety Secure Audit`, width - 60, height - 10);
+            doc.text(`Page ${i} of ${pageCount} | Aegis Secure Audit`, width - 60, height - 10);
         }
 
         doc.save(`sql_manifest_${new Date().getTime()}.pdf`);
@@ -1139,7 +1139,7 @@ class AdminView {
         doc.setFont("courier", "bold");
         doc.setFontSize(28);
         doc.setTextColor(0, 255, 157);
-        doc.text("FSOCIETY", 14, 25);
+        doc.text("AEGIS", 14, 25);
 
         doc.setFontSize(10);
         doc.setTextColor(52, 152, 219);
@@ -1182,7 +1182,7 @@ class AdminView {
             alternateRowStyles: { fillColor: [20, 20, 20] }
         });
 
-        doc.save(`fsociety_stats_${new Date().getTime()}.pdf`);
+        doc.save(`aegis_stats_${new Date().getTime()}.pdf`);
         Utils.showToast("Stats PDF Exported", "success");
     }
 
@@ -1199,7 +1199,7 @@ class AdminView {
         ];
 
         const csv = stats.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-        this.downloadCSV(csv, `fsociety_stats_${new Date().getTime()}.csv`);
+        this.downloadCSV(csv, `aegis_stats_${new Date().getTime()}.csv`);
         Utils.showToast("Stats CSV Exported", "success");
     }
 
@@ -1269,7 +1269,7 @@ class AdminView {
             alternateRowStyles: { fillColor: [20, 20, 20] }
         });
 
-        doc.save(`fsociety_activities_${new Date().getTime()}.pdf`);
+        doc.save(`aegis_activities_${new Date().getTime()}.pdf`);
         Utils.showToast("Activities PDF Exported", "success");
     }
 
@@ -1290,7 +1290,7 @@ class AdminView {
         ]);
 
         const csv = [header, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
-        this.downloadCSV(csv, `fsociety_activities_${new Date().getTime()}.csv`);
+        this.downloadCSV(csv, `aegis_activities_${new Date().getTime()}.csv`);
         Utils.showToast("Activities CSV Exported", "success");
     }
 
@@ -1311,7 +1311,7 @@ class AdminView {
         ]);
 
         const csv = [header, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
-        this.downloadCSV(csv, `fsociety_users_${new Date().getTime()}.csv`);
+        this.downloadCSV(csv, `aegis_users_${new Date().getTime()}.csv`);
         Utils.showToast("Users CSV Exported", "success");
     }
 

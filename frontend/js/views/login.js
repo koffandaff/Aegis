@@ -24,7 +24,7 @@ class LoginView {
                         </div>
 
                         <h2 class="page-title" style="text-align: center; margin-bottom: 0.5rem;">Access System</h2>
-                        <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem; font-size: 0.9rem;">Fsociety Terminal Login</p>
+                        <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem; font-size: 0.9rem;">Aegis Terminal Login</p>
                         
                         <form id="login-form">
                              <div style="margin-bottom: 1.5rem;">

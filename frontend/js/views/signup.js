@@ -23,7 +23,7 @@ class SignupView {
                             <span style="font-size: 0.78rem; color: #ccc; line-height: 1.4;">Server may be in <strong style="color: #ffa502;">cold start</strong> mode. First request might take 30–60s. Please be patient.</span>
                         </div>
 
-                        <h2 class="page-title" style="text-align: center; margin-bottom: 0.5rem;">Join Fsociety</h2>
+                        <h2 class="page-title" style="text-align: center; margin-bottom: 0.5rem;">Join Aegis</h2>
                         <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem; font-size: 0.9rem;">Initialize anonymous connection.</p>
                         
                         <form id="signup-form">
@@ -34,7 +34,7 @@ class SignupView {
 
                             <div style="margin-bottom: 1rem;">
                                 <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">EMAIL ADDRESS</label>
-                                <input type="email" id="email" required placeholder="fsociety@protonmail.com" style="background: rgba(0,0,0,0.3);">
+                                <input type="email" id="email" required placeholder="aegis@protonmail.com" style="background: rgba(0,0,0,0.3);">
                             </div>
 
                             <div style="margin-bottom: 1.5rem;">

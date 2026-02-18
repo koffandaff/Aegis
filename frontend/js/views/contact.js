@@ -6,7 +6,7 @@ class ContactView {
                 <nav class="glass" style="position: fixed; top: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1rem 3rem; left: 0;">
                     <a href="#/" style="text-decoration: none; display: flex; align-items: center;">
                         <span class="material-symbols-outlined" style="color: #fff; font-size: 1.8rem; margin-right: 0.5rem;">security</span>
-                        <span style="font-size: 1.5rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace;">Fsociety</span>
+                        <span style="font-size: 1.5rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace;">Aegis</span>
                     </a>
                     <a href="#/" class="btn-outline" style="padding: 0.5rem 1.5rem;">Back to Home</a>
                 </nav>

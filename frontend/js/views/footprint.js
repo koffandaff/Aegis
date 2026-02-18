@@ -544,7 +544,7 @@ class FootprintView {
                 pdf.setPage(i);
                 pdf.setFontSize(8);
                 pdf.setTextColor(100, 100, 100);
-                pdf.text(`Page ${i} of ${totalPages} | Fsociety Digital Footprint`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+                pdf.text(`Page ${i} of ${totalPages} | Aegis Digital Footprint`, pageWidth / 2, pageHeight - 5, { align: 'center' });
             }
 
             pdf.save(`digital-footprint-report_${Date.now()}.pdf`);

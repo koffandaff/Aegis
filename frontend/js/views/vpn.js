@@ -20,7 +20,7 @@ class VpnView {
                 ${Components.renderSidebar('vpn')}
 
                 <div style="flex: 1; padding: 2rem; overflow-y: auto;">
-                    <h1 class="page-title fade-in">Fsociety Secure Tunnel</h1>
+                    <h1 class="page-title fade-in">Aegis Secure Tunnel</h1>
                     
                     <!-- Disclaimer Banner -->
                     <div class="fade-in" style="background: rgba(231, 76, 60, 0.1); border-left: 4px solid #e74c3c; padding: 1rem; margin-bottom: 2rem; border-radius: 4px;">
@@ -121,7 +121,7 @@ class VpnView {
                             </button>
                         </div>
                         <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted);">
-                             ℹ️ Ensure the Fsociety backend is running with <code>--host 0.0.0.0</code> for the node to sync PKI certificates.
+                             ℹ️ Ensure the Aegis backend is running with <code>--host 0.0.0.0</code> for the node to sync PKI certificates.
                         </div>
                     </div>
                     ` : ''}
@@ -188,7 +188,7 @@ class VpnView {
                         <div id="server-status-notice" style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,255,157,0.1); border-left: 3px solid var(--primary); border-radius: 4px;">
                             <strong style="color: var(--primary);">✅ Real Certificates:</strong>
                             <span style="color: var(--text-muted); font-size: 0.85rem;">
-                                These configurations use valid X.509 certificates signed by the Fsociety CA. 
+                                These configurations use valid X.509 certificates signed by the Aegis CA. 
                                 To connect, you need an OpenVPN server configured with the matching PKI files.
                                 See <code>docs/vpn_server_setup.md</code> for setup instructions.
                             </span>
@@ -321,7 +321,7 @@ class VpnView {
                         const username = this.currentUser?.username || 'user';
                         const cliFilename = document.getElementById('cli-filename');
                         if (cliFilename) {
-                            cliFilename.textContent = `${username}_fsociety_${srv.id.replace('-', '_')}.ovpn`;
+                            cliFilename.textContent = `${username}_aegis_${srv.id.replace('-', '_')}.ovpn`;
                         }
 
                         // Reset Button State
@@ -348,7 +348,7 @@ class VpnView {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const filename = response.filename || `${this.currentUser?.username || 'user'}_fsociety_${srv.id}`;
+        const filename = response.filename || `${this.currentUser?.username || 'user'}_aegis_${srv.id}`;
         a.download = `${filename}.ovpn`;
         document.body.appendChild(a);
         a.click();

@@ -18,7 +18,7 @@ class ForgotPasswordView {
                         <form id="forgot-form">
                             <div style="margin-bottom: 2rem;">
                                 <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">EMAIL ADDRESS</label>
-                                <input type="email" id="email" required placeholder="fsociety@protonmail.com" style="background: rgba(0,0,0,0.3);">
+                                <input type="email" id="email" required placeholder="aegis@protonmail.com" style="background: rgba(0,0,0,0.3);">
                             </div>
                             
                             <button type="submit" class="btn" style="width: 100%; padding: 1rem; font-weight: bold; letter-spacing: 2px;">SEND OTP CODE</button>

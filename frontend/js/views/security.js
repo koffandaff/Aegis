@@ -292,10 +292,10 @@ class SecurityView {
                     pdf.setPage(i);
                     pdf.setFontSize(8);
                     pdf.setTextColor(100, 100, 100);
-                    pdf.text(`Page ${i} of ${totalPages} | Fsociety Security Audit`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+                    pdf.text(`Page ${i} of ${totalPages} | Aegis Security Audit`, pageWidth / 2, pageHeight - 5, { align: 'center' });
                 }
 
-                pdf.save(`fsociety_security_report_${Date.now()}.pdf`);
+                pdf.save(`aegis_security_report_${Date.now()}.pdf`);
                 Utils.showToast('Report Exported Successfully', 'success');
             } catch (e) {
                 console.error('PDF Export Error:', e);

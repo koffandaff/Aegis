@@ -494,10 +494,10 @@ window.downloadPDF = async function () {
             pdf.setPage(i);
             pdf.setFontSize(8);
             pdf.setTextColor(100, 100, 100);
-            pdf.text(`Page ${i} of ${totalPages} | Fsociety Intelligence Report`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+            pdf.text(`Page ${i} of ${totalPages} | Aegis Intelligence Report`, pageWidth / 2, pageHeight - 5, { align: 'center' });
         }
 
-        pdf.save(`fsociety_intel_report_${new Date().getTime()}.pdf`);
+        pdf.save(`aegis_intel_report_${new Date().getTime()}.pdf`);
         Utils.showToast('Report Exported Successfully', 'success');
     } catch (error) {
         console.error('PDF Export Error:', error);
@@ -607,7 +607,7 @@ window.downloadReport = function () {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `fsociety_report_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+    a.download = `aegis_report_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

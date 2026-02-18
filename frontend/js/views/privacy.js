@@ -6,7 +6,7 @@ class PrivacyView {
                 <nav class="glass" style="position: fixed; top: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1rem 3rem; left: 0;">
                     <a href="#/" style="text-decoration: none; display: flex; align-items: center;">
                         <span class="material-symbols-outlined" style="color: #fff; font-size: 1.8rem; margin-right: 0.5rem;">security</span>
-                        <span style="font-size: 1.5rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace;">Fsociety</span>
+                        <span style="font-size: 1.5rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace;">Aegis</span>
                     </a>
                     <a href="#/" class="btn-outline" style="padding: 0.5rem 1.5rem;">Back to Home</a>
                 </nav>
@@ -40,7 +40,7 @@ class PrivacyView {
 
                         <h2 style="font-size: 1.5rem; margin: 1.5rem 0 1rem; color: #fff;">4. Ethical Use</h2>
                         <p style="margin-bottom: 1rem; line-height: 1.6;">
-                            By using Fsociety, you agree to only scan networks and systems you own or have explicit permission to test. Unauthorized access is strictly prohibited.
+                            By using Aegis, you agree to only scan networks and systems you own or have explicit permission to test. Unauthorized access is strictly prohibited.
                         </p>
                     </div>
 

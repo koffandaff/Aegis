@@ -6,7 +6,7 @@ class TermsView {
                 <nav class="glass" style="position: fixed; top: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1rem 3rem; left: 0;">
                     <a href="#/" style="text-decoration: none; display: flex; align-items: center;">
                         <span class="material-symbols-outlined" style="color: #fff; font-size: 1.8rem; margin-right: 0.5rem;">security</span>
-                        <span style="font-size: 1.5rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace;">Fsociety</span>
+                        <span style="font-size: 1.5rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace;">Aegis</span>
                     </a>
                     <a href="#/" class="btn-outline" style="padding: 0.5rem 1.5rem;">Back to Home</a>
                 </nav>
@@ -19,18 +19,18 @@ class TermsView {
                             <span class="material-symbols-outlined" style="color: #ffbd2e; font-size: 2rem;">gavel</span>
                             <div>
                                 <h3 style="color: #ffbd2e; margin: 0;">Legal Agreement</h3>
-                                <p style="margin: 0; font-size: 0.9rem; color: #ffeaa7;">By accessing Fsociety, you agree to these binding terms.</p>
+                                <p style="margin: 0; font-size: 0.9rem; color: #ffeaa7;">By accessing Aegis, you agree to these binding terms.</p>
                             </div>
                         </div>
 
                         <h2 style="font-size: 1.5rem; margin: 1.5rem 0 1rem; color: #fff;">1. Acceptance of Terms</h2>
                         <p style="margin-bottom: 1rem; line-height: 1.6;">
-                            Fsociety provides security tools for authorized use only. Illegal activities performed using our tools will not be tolerated and may be reported to authorities.
+                            Aegis provides security tools for authorized use only. Illegal activities performed using our tools will not be tolerated and may be reported to authorities.
                         </p>
 
                         <h2 style="font-size: 1.5rem; margin: 1.5rem 0 1rem; color: #fff;">2. Use Safely</h2>
                         <p style="margin-bottom: 1rem; line-height: 1.6;">
-                            <strong>Use It Safely.</strong> You agree to take full responsibility for your actions. Fsociety is not liable for any damage caused by misuse of our scanning or reconnaissance tools.
+                            <strong>Use It Safely.</strong> You agree to take full responsibility for your actions. Aegis is not liable for any damage caused by misuse of our scanning or reconnaissance tools.
                         </p>
 
                         <h2 style="font-size: 1.5rem; margin: 1.5rem 0 1rem; color: #fff;">3. Account Termination</h2>

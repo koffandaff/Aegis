@@ -101,8 +101,8 @@ class Components {
 
     static renderProgressBar(id = 'global-progress') {
         return `
-            <div id="${id}-container" class="fs-progress-container">
-                <div id="${id}-bar" class="fs-progress-bar"></div>
+            <div id="${id}-container" class="aegis-progress-container">
+                <div id="${id}-bar" class="aegis-progress-bar"></div>
             </div>
             <div id="${id}-text" style="text-align: center; margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted); display: none;">Initializing...</div>
         `;

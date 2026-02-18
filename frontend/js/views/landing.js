@@ -17,7 +17,7 @@ class LandingView {
                 <nav class="glass" style="position: fixed; top: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1rem 3rem;">
                     <a href="#/" style="text-decoration: none; display: flex; align-items: center;">
                         <span class="material-symbols-outlined" style="color: #fff; font-size: 1.8rem; margin-right: 0.5rem; text-shadow: 0 0 15px rgba(255,255,255,0.4);">security</span>
-                        <span style="font-size: 1.5rem; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;">Fsociety</span>
+                        <span style="font-size: 1.5rem; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;">Aegis</span>
                         <span style="color: #fff; animation: blink 1s step-end infinite; font-weight: 300; text-shadow: 0 0 10px rgba(255,255,255,0.5);">_</span>
                     </a>
                     <div style="display: flex; gap: 1rem; align-items: center;">
@@ -199,7 +199,7 @@ class LandingView {
                         <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">
                             Meet The <span style="color: var(--primary);">Creators</span>
                         </h2>
-                        <p style="color: var(--text-muted); font-size: 1.1rem;">The elite engineering team behind Fsociety.</p>
+                        <p style="color: var(--text-muted); font-size: 1.1rem;">The elite engineering team behind Aegis.</p>>
                     </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem;">
@@ -252,7 +252,7 @@ class LandingView {
                         Ready to <span style="color: var(--primary);">Secure</span> Your Future?
                     </h2>
                     <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem; line-height: 1.7;">
-                        Join thousands of security professionals who trust Fsociety to protect their digital assets.
+                        Join thousands of security professionals who trust Aegis to protect their digital assets.
                     </p>
                     <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                         <a href="${Auth.isAuthenticated() ? '#/dashboard' : '#/signup'}" class="btn" style="padding: 1rem 3rem; font-size: 1.1rem;">
@@ -270,7 +270,7 @@ class LandingView {
                 <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <span class="material-symbols-outlined" style="color: #fff; font-size: 1.2rem; opacity: 0.8;">security</span>
-                        <span style="font-size: 1.2rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace;">Fsociety</span>
+                        <span style="font-size: 1.2rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace;">Aegis</span>
                         <span style="color: var(--text-muted); margin-left: 1rem; font-size: 0.85rem;">© 2026 All rights reserved</span>
                     </div>
                     <div style="display: flex; gap: 2rem; font-size: 0.9rem;">
@@ -346,7 +346,7 @@ class LandingView {
         observer.observe(document.body, { childList: true, subtree: true });
 
         const logs = [
-            { type: 'info', msg: 'Initializing Fsociety Core...' },
+            { type: 'info', msg: 'Initializing Aegis Core...' },
             { type: 'success', msg: 'System Online' },
             { type: 'info', msg: 'Ready for scanning.' }
         ];
