@@ -1,4 +1,4 @@
-# Fsociety - Cybersecurity Platform
+# Aegis - Cybersecurity Platform
 
 <div align="center">
 
