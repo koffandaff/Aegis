@@ -346,7 +346,7 @@ class LandingView {
         observer.observe(document.body, { childList: true, subtree: true });
 
         const logs = [
-            { type: 'info', msg: 'Initializing Fsociety Core...' },
+            { type: 'info', msg: 'Initializing Aegis Core...' },
             { type: 'success', msg: 'System Online' },
             { type: 'info', msg: 'Ready for scanning.' }
         ];

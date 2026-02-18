@@ -537,7 +537,6 @@ class AdminView {
     }
 
     // ==================== USER ACTIONS ====================
-    // ==================== USER ACTIONS ====================
 
     // Stage 1: Show Confirmation Modal
     confirmToggleStatus(userId, isActive, username) {

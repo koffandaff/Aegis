@@ -183,7 +183,7 @@ class Api {
 
         document.getElementById('disabled-logout-btn').addEventListener('click', () => {
             localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
+            // Refresh token is HttpOnly cookie, so we don't need to remove it from localStorage
             localStorage.removeItem('user');
             window.location.hash = '/login';
             modal.remove();
@@ -238,7 +238,8 @@ class Api {
     static handleLogout() {
         console.log('Logging out due to session expiration');
         localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+        // Refresh token is HttpOnly cookie
+
         localStorage.removeItem('user');
         window.location.hash = '/login';
     }

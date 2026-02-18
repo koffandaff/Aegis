@@ -12,6 +12,7 @@ class Auth {
                 return null;
             }
 
+            // Refresh token is handled via HttpOnly cookie by the backend, so we don't need to save it here.
             localStorage.setItem('access_token', response.access_token);
             localStorage.setItem('user', JSON.stringify(response.user));
 
