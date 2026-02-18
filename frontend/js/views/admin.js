@@ -981,7 +981,7 @@ class AdminView {
         // Fsociety Branding
         doc.setFont("courier", "bold");
         doc.setFontSize(28);
-        doc.setTextColor(0, 255, 157); // fsociety green
+        doc.setTextColor(0, 255, 157); // aegis green
         doc.text("AEGIS", 14, 25);
 
         doc.setFontSize(10);

@@ -36,7 +36,7 @@ class LandingView {
                 <!-- Hero Content -->
                 <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 6rem 2rem 4rem 2rem; position: relative; z-index: 1;">
                     <div style="display: flex; flex-direction: row; align-items: center; gap: 4rem; max-width: 1200px; width: 100%; flex-wrap: wrap;">
-                        <div style="flex: 1; min-width: 320px;">
+                        <div style="flex: 1; min-width: 280px;">
                             <div style="display: inline-block; background: rgba(0, 255, 157, 0.1); border: 1px solid var(--primary); border-radius: 30px; padding: 0.4rem 1.2rem; margin-bottom: 2rem; font-size: 0.85rem; color: var(--primary);">
                                 🔒 Enterprise-Grade Security Platform
                             </div>
@@ -62,7 +62,7 @@ class LandingView {
                         </div>
 
                         <!-- Recon Terminal Animation -->
-                        <div style="flex: 1; min-width: 320px;">
+                        <div style="flex: 1; min-width: 280px;">
                             <div class="card glass" style="background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(0, 255, 157, 0.2); padding: 0; overflow: hidden; height: 350px; display: flex; flex-direction: column; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
                                 <div style="background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <div style="display: flex; gap: 5px;">
@@ -98,7 +98,7 @@ class LandingView {
                         </p>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
                         
                         <!-- Feature 1: AI Assistant -->
                         <div class="feature-card">
@@ -202,7 +202,7 @@ class LandingView {
                         <p style="color: var(--text-muted); font-size: 1.1rem;">The elite engineering team behind Aegis.</p>>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 3rem;">
                         <!-- Dhruvil Adroja -->
                         <div class="card glass creator-card" style="text-align: center; padding: 3rem 2rem; border: 1px solid rgba(0, 255, 157, 0.1); transition: all 0.3s ease;">
                             <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; margin: 0 auto 1.5rem auto; display: flex; align-items: center; justify-content: center; color: #000; box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);">

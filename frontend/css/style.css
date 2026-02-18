@@ -1,3 +1,8 @@
+/*
+ * Aegis Design System
+ * @author Vraj Patel
+ * Core layout, variables, and glassmorphism utilities.
+ */
 :root {
     /* Colors */
     --bg-dark: #0f0f13;
@@ -89,7 +94,13 @@ body::before {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .container {
+        padding: 2rem;
+    }
 }
 
 .btn {
@@ -311,7 +322,7 @@ input:focus {
 /* Grid Lists & Cards */
 .grid-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 0.8rem;
 }
 
@@ -327,7 +338,7 @@ input:focus {
 
 .port-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 1rem;
 }
 
@@ -738,6 +749,8 @@ input:focus {
         white-space: nowrap;
         width: 100%;
         -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
     }
 
     pre {
