@@ -1,8 +1,8 @@
-# Fsociety - Cybersecurity Platform
+# Aegis - Cybersecurity Platform
 
 <div align="center">
 
-![Fsociety Logo](https://img.shields.io/badge/Fsociety-Cybersecurity-00ff9d?style=for-the-badge&logo=security&logoColor=white)
+![Aegis Logo](https://img.shields.io/badge/Aegis-Cybersecurity-00ff9d?style=for-the-badge&logo=security&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.11+-3776ab?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-f7df1e?style=for-the-badge&logo=javascript&logoColor=black)
@@ -37,7 +37,7 @@
 
 ## Overview
 
-**Fsociety** is a comprehensive cybersecurity platform designed for security professionals, penetration testers, and IT administrators. It provides a suite of tools for network scanning, security auditing, phishing detection, digital footprint analysis, and more—all wrapped in a sleek, modern interface.
+**Aegis** is a comprehensive cybersecurity platform designed for security professionals, penetration testers, and IT administrators. It provides a suite of tools for network scanning, security auditing, phishing detection, digital footprint analysis, and more—all wrapped in a sleek, modern interface.
 
 The platform features:
 
@@ -149,7 +149,7 @@ The platform features:
 
    ```bash
    git clone https://github.com/koffandaff/Aegis.git
-   cd fsociety
+   cd Aegis
    ```
 2. **Create and activate virtual environment**
 
@@ -210,9 +210,9 @@ The platform features:
 
 | Role  | Email                    | Password          |
 | ----- | ------------------------ | ----------------- |
-| Admin | `admin@fsociety.com`   | `Admin123!`     |
-| Admin | `dhruvil@fsociety.com` | `Fsociety2026!` |
-| User  | `mrrobot@fsociety.com` | `Elliot123!`    |
+| Admin | `admin@Aegis.com`   | `Admin123!`     |
+| Admin | `dhruvil@Aegis.com` | `Aegis2026!` |
+| User  | `mrrobot@Aegis.com` | `Elliot123!`    |
 
 ### Quick Start Workflow
 
@@ -404,7 +404,7 @@ docs/
 | :------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------: |
 |                                **Dhruvil Adroja**                                |                                  **Vraj Patel**                                  |                                 **Krisha Patel**                                 |
 |                               Lead Full Stack Developer                               |                                  Full Stack Developer                                  |                                  Full Stack Developer                                  |
-|                             Linux & Recon Engine Architect                             |                                 Backend Infrastructure                                 |                                 UI/UX & Visualizations                                 |
+|                             Linux & Recon Engine Architect                             |                                 UI/UX & Visualizations                                 |                                  Backend Infrastructure                                |
 
 </div>
 
@@ -418,8 +418,8 @@ This project is developed for educational purposes as part of academic coursewor
 
 <div align="center">
 
-**Built with ❤️ by the Fsociety Team**
+**Built with ❤️ by the Aegis Team**
 
-[⬆ Back to Top](#-fsociety---cybersecurity-platform)
+[⬆ Back to Top](#-Aegis---cybersecurity-platform)
 
 </div>
